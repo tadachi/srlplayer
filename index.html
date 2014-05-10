@@ -1,0 +1,133 @@
+<!-- 
+http://24.69.102.51
+CLIENT ID: 	5wf6b3t4dqr0rfbthgkqqlz79yy9rgr 
+NAME:		tplyr
+SECRET: 	gwiu1cs80y1x5u7h3dubjhrydynrss2
+-->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+	<meta content="text/html; charset=utf-8" http-equiv="content-type">
+	<title>TwitchPlayer</title>
+	<script src="js/jquery-2.0.3.min.js"></script>
+	<script src="js/twitch.min.js"></script>
+	<script>
+		Twitch.init({clientId: '5wf6b3t4dqr0rfbthgkqqlz79yy9rg'}, function(error, status) {
+		  if (error) {
+			// error encountered while loading
+			console.log(error);
+		  }
+		  // the sdk is now loaded
+		  if (status.authenticated) {
+			// user is currently logged in
+		  }
+		  console.log('Twitch API Initialized');
+		});
+	</script>
+	<script>
+	if (!String.prototype.format) {
+		String.prototype.format = function() {
+			var str = this.toString();
+			if (!arguments.length)
+				return str;
+			var args = typeof arguments[0],
+				args = (("string" == args || "number" == args) ? arguments : arguments[0]);
+			for (arg in args)
+				str = str.replace(RegExp("\\{" + arg + "\\}", "gi"), args[arg]);
+			return str;
+		}
+	}	
+	
+	function srlTeamChannels(callback) {
+		//'http://api.speedrunslive.com/test/team'
+		$.getJSON('srlJson.json',function(json){
+			data = json;
+			callback(json);
+		});
+	}
+	
+	function srlTeamChannelTable(srlJson, callback) {
+		if (srlJson) {
+			for (var i = 0; i < 5; i++ ) {
+				//console.log(srlJson.channels[i].channel);
+				var txt = '';
+				var channel = srlJson.channels[i].channel
+
+				txt += '{tag1}{name} - {title}{tag2}'.format({
+					tag1: '<li value={n}>'.format({n: i}), 
+					name: channel.display_name,
+					title: channel.title,
+					tag2: '</li>'
+					})
+
+				if (txt != '') {
+					$('#stream ul').append(txt).removeClass('hidden');
+				}
+			}			
+		}
+		
+		//This allows fast switching of streams by changing the param in the videoplayer object,
+		$('#stream ul li').click(function() {
+			data = $(this).text().split(' '); // data[0] is the channel name. the rest of array not needed
+			flashvars = '<param name=\'flashvars\' value=channel={ch}&start_volume=10&auto_play=false>'.format({
+				ch: data[0]});
+			// change the video channel
+			$('#videoplayer').find('param[name="flashvars"]').replaceWith(flashvars);
+			
+			// change the chat to the corresponding video channel
+			chat = 'http://twitch.tv/chat/embed?channel={ch}&amp;popout_chat=true'.format({
+				ch: data[0]});
+			$("#chat_embed").attr("src", chat);
+		});	
+		
+		var test2 = $('#videoplayer').find('param[name="flashvars"]').val();
+		console.log(test2);
+	}
+	
+
+	
+	srlTeamChannels( function(srlJson) {
+		srlTeamChannelTable(srlJson);
+	});
+	</script>
+	<style>
+		
+	</style>
+	</head>
+	<body>
+
+		<div id='streams'>
+			<div id='stream'>
+				<ul></ul>
+			</div>
+		</div>
+
+		<div id='showhide'>
+			<img src='img/32x32_left_right_arrow.png'>
+		</div>
+		
+		<div id='videoplayer' class='hidden'>
+			<object bgcolor='#000000' 
+			data='http://www.twitch.tv/widgets/archive_embed_player.swf' 
+			height='378' 
+			id='clip_embed_player_flash' 
+			type='application/x-shockwave-flash' width='620'>
+			<param name='movie' value='http://www.twitch.tv/widgets/archive_embed_player.swf' />
+			<param name='allowScriptAccess' value='always' />
+			<param name='allowNetworking' value='all' />
+			<param name='allowFullScreen' value='true' />
+			<param name='flashvars' value='auto_play=false'/>
+			</object>
+		</div>
+		
+		<div id='chatbox' class='hidden'>
+			<iframe id='chat_embed'
+					frameborder='0'
+					scrolling='yes'
+					src=''
+					height='500'
+					width='350'>
+			</iframe>
+		</div>
+	</body>
+</html>
