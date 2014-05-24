@@ -5,12 +5,13 @@ NAME:		tplyr
 SECRET: 	gwiu1cs80y1x5u7h3dubjhrydynrss2
 -->
 <!DOCTYPE html>
-<html lang="en">
+<html lang='en'>
   <head>
-	<meta content="text/html; charset=utf-8" http-equiv="content-type">
+	<meta content='text/html; charset=utf-8' http-equiv='content-type'>
 	<title>TwitchPlayer</title>
-	<script src="js/jquery-2.0.3.min.js"></script>
-	<script src="js/twitch.min.js"></script>
+	<link rel='stylesheet' href='main.css'>
+	<script src='js/jquery-2.0.3.min.js'></script>
+	<script src='js/twitch.min.js'></script>
 	<script>
 		Twitch.init({clientId: '5wf6b3t4dqr0rfbthgkqqlz79yy9rg'}, function(error, status) {
 		  if (error) {
@@ -31,9 +32,9 @@ SECRET: 	gwiu1cs80y1x5u7h3dubjhrydynrss2
 			if (!arguments.length)
 				return str;
 			var args = typeof arguments[0],
-				args = (("string" == args || "number" == args) ? arguments : arguments[0]);
+				args = (('string' == args || 'number' == args) ? arguments : arguments[0]);
 			for (arg in args)
-				str = str.replace(RegExp("\\{" + arg + "\\}", "gi"), args[arg]);
+				str = str.replace(RegExp('\\{' + arg + '\\}', 'gi'), args[arg]);
 			return str;
 		}
 	}	
@@ -72,62 +73,177 @@ SECRET: 	gwiu1cs80y1x5u7h3dubjhrydynrss2
 			flashvars = '<param name=\'flashvars\' value=channel={ch}&start_volume=10&auto_play=false>'.format({
 				ch: data[0]});
 			// change the video channel
-			$('#videoplayer').find('param[name="flashvars"]').replaceWith(flashvars);
+			$('#videoplayer').find('param[name=\'flashvars\']').replaceWith(flashvars);
 			
 			// change the chat to the corresponding video channel
 			chat = 'http://twitch.tv/chat/embed?channel={ch}&amp;popout_chat=true'.format({
 				ch: data[0]});
-			$("#chat_embed").attr("src", chat);
+			$('#chat_embed').attr('src', chat);
 		});	
 		
-		var test2 = $('#videoplayer').find('param[name="flashvars"]').val();
-		console.log(test2);
+		<!-- Debug -- >
+		//var test2 = $('#videoplayer').find('param[name=\'flashvars\']').val();
+		//console.log(test2);
+		console.log($('#videoplayer').css('width') + ' by ' + $('#videoplayer').css('height'));
+		<!-- End Debug -- >
+	}
+
+	function calcResolutions() {
+		var hOffset = 0;
+		var currWinWidth = $(window).width();
+		var currWinHeight = $(window).height();
+		var leftRightPanelWidth = Math.floor(0.10 * currWinWidth);
+		var leftRightPanelHeight = Math.floor(currWinHeight - hOffset);
+		var centerPanelWidth = Math.ceil(0.80 * currWinWidth);
+		var centerPanelHeight = Math.ceil(currWinHeight - hOffset);
+		
+		<!-- Debug -->
+<!-- 		console.log('leftRight: ' + leftRightPanelWidth + 'x' + leftRightPanelHeight); -->
+<!-- 		console.log('center: ' + centerPanelWidth + 'x' + centerPanelHeight); -->
+		<!-- End Debug -- >
+		
+		return {leftRightW: leftRightPanelWidth, leftRightH: leftRightPanelHeight,
+				centerPanelW: centerPanelWidth, centerPanelH: centerPanelHeight};
+				
 	}
 	
+	function applyResolutions() {
+		res = calcResolutions();
+		$('#left').css('width', res.leftRightW);
+		$('#left').css('height', res.leftRightH);
+		$('#right').css('width', res.leftRightW);
+		$('#right').css('height', res.leftRightH);
+		$('#center').css('width', res.centerPanelW);
+		$('#center').css('height', res.centerPanelH);
+		$('#videoplayer').css('width', res.centerPanelW);
+		$('#videoplayer').css('height', res.centerPanelH);
+		//$('#chatemx').height('res.res.leftRightH');
+	}	
 
-	
 	srlTeamChannels( function(srlJson) {
 		srlTeamChannelTable(srlJson);
 	});
+
+
+	function showDebugResolutions() {
+		$('#leftInfoDebug').text(' ( '
+					+ $('#left').width() + 'x' + $('#left').height() + ' )');
+
+		$('#rightInfoDebug').text(' ( '
+					+ $('#right').width() + 'x' + $('#right').height() + ' )');				
+					
+		$('#centerInfoDebug').resize(function () {
+			$('#centerInfoDebug').text(' ( ' + $('#center').width() 
+									 + ' x ' + $('#center').height() + ' )');
+		});	
+	}	
+	
+	function disableVerticalScrolling() {
+		$('html, body').css({
+			'overflow': 'hidden',
+			'height': '100%'
+		})	
+	}
+
+	function disableHorizontalScrolling() {
+		$("jqueryselector").css("overflow-x","hidden"); //hide horizontal scrollbar	
+	}
+	
+	disableVerticalScrolling();
+	disableHorizontalScrolling();
+
+
+
+	$( document ).ready(function() {
+		applyResolutions();
+		showDebugResolutions()
+	});
+	
+	$( window ).resize(function() {
+		applyResolutions();
+		showDebugResolutions()
+	});
+
+
+	
 	</script>
-	<style>
-		
-	</style>
+
+<style type='text/css'>
+	#centerInfoDebug{
+		padding:8px;
+		border:1px solid blue;
+		width:100px;
+	}
+	
+	#leftInfoDebug{
+		padding:8px;
+		border:1px solid blue;
+		width:100px;
+	}
+	
+	#rightInfoDebug{
+		padding:8px;
+		border:1px solid blue;
+		width:100px;
+	}
+</style>
+
 	</head>
 	<body>
-
-		<div id='streams'>
-			<div id='stream'>
-				<ul></ul>
+		<!--<div id='header'></div>-->
+		<div id='container'>
+		
+			<div id='left' class='column'>
+				<div id='leftInfoDebug'></div>
+				<div id='streams'>
+					<div id='stream'>
+						<ul></ul>
+					</div>
+				</div>			
 			</div>
+
+			<div id='center'>
+<!-- 				<div id='centerInfoDebug'></div> -->
+
+				<div id='videoplayer'>
+					<object bgcolor='#000000' 
+					data='http://www.twitch.tv/widgets/archive_embed_player.swf' 
+					id='clip_embed_player_flash' 
+					type='application/x-shockwave-flash' 
+					width='1400'
+					height='920' >
+					<param name='movie' value='http://www.twitch.tv/widgets/archive_embed_player.swf' />
+					<param name='allowScriptAccess' value='always' />
+					<param name='allowNetworking' value='all' />
+					<param name='allowFullScreen' value='true' />
+					<param name='flashvars' value='auto_play=false'/>
+					</object>
+				</div>
+			</div>
+
+			<div id='right' class='column'>
+				<div id='rightInfoDebug'></div>
+				<div id='chatbox' class='hidden'>
+					<iframe id='chat_embed'
+							frameborder='0'
+							scrolling='yes'
+							src=''
+							width='350'
+							height='500'>
+					</iframe>
+				</div>	
+			</div>	
+			
+		</div>
+		<div id='footer-wrapper'>
+		  <div id='footer'></div>
 		</div>
 
+<!--
 		<div id='showhide'>
 			<img src='img/32x32_left_right_arrow.png'>
 		</div>
-		
-		<div id='videoplayer' class='hidden'>
-			<object bgcolor='#000000' 
-			data='http://www.twitch.tv/widgets/archive_embed_player.swf' 
-			height='378' 
-			id='clip_embed_player_flash' 
-			type='application/x-shockwave-flash' width='620'>
-			<param name='movie' value='http://www.twitch.tv/widgets/archive_embed_player.swf' />
-			<param name='allowScriptAccess' value='always' />
-			<param name='allowNetworking' value='all' />
-			<param name='allowFullScreen' value='true' />
-			<param name='flashvars' value='auto_play=false'/>
-			</object>
-		</div>
-		
-		<div id='chatbox' class='hidden'>
-			<iframe id='chat_embed'
-					frameborder='0'
-					scrolling='yes'
-					src=''
-					height='500'
-					width='350'>
-			</iframe>
-		</div>
+-->
+	
 	</body>
 </html>
