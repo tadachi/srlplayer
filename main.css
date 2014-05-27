@@ -32,10 +32,29 @@ float:inherit;
 position:relative;
 width:200px;
 height:900px;
+overflow: scroll;
+overflow-x: hidden;
+background-color:grey;
+color:white;
+font-family: Tahoma, Geneva, sans-serif;
 
-background-color:lightblue;
-font-family: Tahoma, Geneva, sans-serif
 }	
+
+#left ul {
+width: inherit;
+float: left;
+list-style-type: none;
+}
+
+#left li {
+width:inherit;
+float:left;
+margin:0px 0px 0px 0px;
+padding:0px 0px 0px 0px;
+overflow:hidden;
+text-overflow:ellipsis;
+font-size:65%;
+}
 
 #center
 {
@@ -44,7 +63,7 @@ float:inherit;
 position:relative;
 width:1450px;
 height:900px;
-background-color:red;
+background-color:grey;
 }
 
 #right
@@ -55,7 +74,7 @@ position:relative;
 width:200px;
 height:900px;
 
-background-color:green;
+background-color:blue;
 
 }
 

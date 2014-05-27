@@ -27,6 +27,9 @@ SECRET: 	gwiu1cs80y1x5u7h3dubjhrydynrss2
 	</script>
 	
 	<script>
+	var leftShow = true;
+	var rightShow = true;
+	
 	if (!String.prototype.format) {
 		String.prototype.format = function() {
 			var str = this.toString();
@@ -42,21 +45,24 @@ SECRET: 	gwiu1cs80y1x5u7h3dubjhrydynrss2
 	
 	function srlTeamChannels(callback) {
 		//'http://api.speedrunslive.com/test/team'
-		$.getJSON('srlJson.json',function(json){
-			data = json;
-			callback(json);
+		$.getJSON('http://api.speedrunslive.com/test/team',function(json){
+			srlTeamChannelTable(json);
 		});
+
 	}
 	
 	function srlTeamChannelTable(srlJson, callback) {
 		if (srlJson) {
-			for (var i = 0; i < 5; i++ ) {
+			for (var i = 0; i < 40; i++ ) {
 				//console.log(srlJson.channels[i].channel);
 				var txt = '';
 				var channel = srlJson.channels[i].channel
+				var image = '<img width=60 height=60 align=\'left\' src=\' ' +
+					channel.image.size70 + '\' alt=min>';
 
-				txt += '{tag1}{name} - {title}{tag2}'.format({
-					tag1: '<li value={n}>'.format({n: i}), 
+				txt += '{tag1}{img1}{name} - {title}{tag2}'.format({
+					tag1: '<li value={n}>'.format({n: i}),
+					img1: image,					
 					name: channel.display_name,
 					title: channel.title,
 					tag2: '</li>'
@@ -72,17 +78,18 @@ SECRET: 	gwiu1cs80y1x5u7h3dubjhrydynrss2
 		$('#stream ul li').click(function() {
 			data = $(this).text().split(' '); // data[0] or first item is the channel name. the rest of array not needed.
 			
-			// create the channel string based on chosen stream.
+			// Create the channel string based on chosen stream.
 			flashvars = '<param name=\'flashvars\' value=channel={ch}&start_volume=10&auto_play=true>'.format({
 				ch: data[0]});
 				
-			// change the video channel via DOM
+			// Change the video channel via DOM
 			$('#videoplayer_embed').find('param[name=\'flashvars\']').replaceWith(flashvars);
 			
-			// change the chat to the corresponding video channel
+			// Change the chat to the corresponding video channel.
 			chat = 'http://twitch.tv/chat/embed?channel={ch}&amp;popout_chat=true'.format({
 				ch: data[0]});
 			$('#chat_embed').attr('src', chat);
+			
 		});	
 		
 		<!-- Debug -- >
@@ -130,27 +137,12 @@ SECRET: 	gwiu1cs80y1x5u7h3dubjhrydynrss2
 				centerW: centerPanelWidth, centerH: centerPanelHeight,
 				leftCenterW: leftPlusCenterWidth, leftCenterH: leftPlusCenterHeight,
 				rightCenterW: rightPlusCenterWidth, rightCenterH: rightPlusCenterHeight,
-				centerOnlyH: centerOnlyWidth, centerOnlyH: centerOnlyHeight
+				centerOnlyW: centerOnlyWidth, centerOnlyH: centerOnlyHeight
 				};
 				
 	}
 	
-	function applyResolutions() {
-		res = calcResolutions();
-		$('#header').css('width',res.headerW);
-		$('#header').css('height',res.headerH);
-		$('#left').css('width', res.leftW);
-		$('#left').css('height', res.leftH);
-		$('#right').css('width', res.rightW);
-		$('#right').css('height', res.rightH);
-		$('#center').css('width', res.centerW);
-		$('#center').css('height', res.centerH);
-		$('#videoplayer_embed').css('width', res.centerW);
-		$('#videoplayer_embed').css('height', res.centerH);
-		$('#chat_embed').css('width', res.rightW);
-		$('#chat_embed').css('height', res.rightH);
-		$('#showhide_right').css('padding-left', res.headerW-42);
-	}	
+
 	
 	srlTeamChannels( function(srlJson) {
 		srlTeamChannelTable(srlJson);
@@ -180,49 +172,96 @@ SECRET: 	gwiu1cs80y1x5u7h3dubjhrydynrss2
 	function disableHorizontalScrolling() {
 		$("jqueryselector").css("overflow-x","hidden"); //hide horizontal scrollbar	
 	}
+
+	// Apply panel resolutions based on current window sizes to various divs
+	function applyResolutions() {
+		res = calcResolutions();
+		$('#header').css('width',res.headerW);
+		$('#header').css('height',res.headerH);
+		$('#left').css('width', res.leftW);
+		$('#left').css('height', res.leftH);
+		$('#right').css('width', res.rightW);
+		$('#right').css('height', res.rightH);
+		$('#center').css('width', res.centerW);
+		$('#center').css('height', res.centerH);
+		$('#videoplayer_embed').css('width', res.centerW);
+		$('#videoplayer_embed').css('height', res.centerH);
+		$('#chat_embed').css('width', res.rightW);
+		$('#chat_embed').css('height', res.rightH);
+		$('#showhide_right').css('margin-left', res.headerW-48);
+	}	
+
+	function showHideLeft() {
+		$('#left').toggle();
+		leftShow = !leftShow;
+
+		if (!leftShow && rightShow) {
+			$('#center').css('width', res.leftCenterW);
+			$('#center').css('height', res.leftCenterH);			
+			$('#videoplayer_embed').css('width', res.leftCenterW);
+			$('#videoplayer_embed').css('height', res.leftCenterH);				
+		} 
+		if ( (!leftShow && !rightShow) ) {
+			$('#center').css('width', res.centerOnlyW);
+			$('#center').css('height', res.centerOnlyH);			
+			$('#videoplayer_embed').css('width', res.centerOnlyW);
+			$('#videoplayer_embed').css('height', res.centerOnlyH);		
+		}
+		if (leftShow && !rightShow) {
+			$('#center').css('width', res.rightCenterW);
+			$('#center').css('height', res.rightCenterH);	
+			$('#videoplayer_embed').css('width', res.rightCenterW);
+			$('#videoplayer_embed').css('height', res.rightCenterH);				
+		} 
+		if ( leftShow && rightShow) {
+			applyResolutions();
+		}
+		console.log(leftShow);
+	}
 	
-
-
+	function showHideRight() {
+		$('#right').toggle();
+		rightShow = !rightShow;
+		if (leftShow && !rightShow) {
+			$('#center').css('width', res.rightCenterW);
+			$('#center').css('height', res.rightCenterH);	
+			$('#videoplayer_embed').css('width', res.rightCenterW);
+			$('#videoplayer_embed').css('height', res.rightCenterH);				
+		} 
+		if ( (!leftShow && !rightShow) ) {
+			$('#center').css('width', res.centerOnlyW);
+			$('#center').css('height', res.centerOnlyH);			
+			$('#videoplayer_embed').css('width', res.centerOnlyW);
+			$('#videoplayer_embed').css('height', res.centerOnlyH);		
+		}
+		if (!leftShow && rightShow) {
+			$('#center').css('width', res.leftCenterW);
+			$('#center').css('height', res.leftCenterH);			
+			$('#videoplayer_embed').css('width', res.leftCenterW);
+			$('#videoplayer_embed').css('height', res.leftCenterH);				
+		} 
+		if ( leftShow && rightShow) {
+			applyResolutions();
+		}
+		console.log(rightShow);
+	}
+	
 	$( document ).ready(function() {
-		var leftShow = true;
-		var rightShow = true;
 		disableVerticalScrolling();
 		disableHorizontalScrolling();
-		applyResolutions();
-		showDebugResolutions()
+		applyResolutions();					// Apply panel resolutions based on current window sizes
 		
-		$('#showhide_left').click(function(event) { //FIX!
-			var res = calcResolutions();
-			$('#left').toggle();
-			leftShow = !leftShow;
-			if (leftShow == false) {
-				$('#center').css('width', res.leftCenterW);
-				$('#center').css('height', res.leftCenterH);			
-				$('#videoplayer_embed').css('width', res.leftCenterW);
-				$('#videoplayer_embed').css('height', res.leftCenterH);				
-			} else {
-				applyResolutions();
-			}
+		$('#showhide_left').click(function(event) {
+			showHideLeft();
 		});
 		
 		$('#showhide_right').click(function(event) {
-			$('#right').toggle();
-			rightShow = !rightShow;
-			if (rightShow == false) {
-				$('#center').css('width', res.rightCenterW);
-				$('#center').css('height', res.rightCenterH);	
-				$('#videoplayer_embed').css('width', res.rightCenterW);
-				$('#videoplayer_embed').css('height', res.rightCenterH);				
-			} else {
-				applyResolutions();
-			}
-
+			showHideRight();
 		});
 	});
 	
 	$( window ).resize(function() {
 		applyResolutions();
-		showDebugResolutions()
 	});
 
 
@@ -252,8 +291,8 @@ SECRET: 	gwiu1cs80y1x5u7h3dubjhrydynrss2
 	</head>
 	<body>
 		<div id='header' class='hidden'>
-			<span style=''><img id='showhide_left' src='img/32x32_left_right_arrow.png' alt='min'></span>
-			<span style='position: absolute'><img id='showhide_right' src='img/32x32_left_right_arrow.png' alt='min'></span>
+			<img id='showhide_left' src='img/32x32_left_right_arrow.png' alt='min'>
+			<img id='showhide_right' src='img/32x32_left_right_arrow.png' alt='min'>
 		</div>
 		<div id='container'>
 		
