@@ -25,6 +25,7 @@ SECRET: 	gwiu1cs80y1x5u7h3dubjhrydynrss2
 		  console.log('Twitch API Initialized');
 		});
 	</script>
+	
 	<script>
 	if (!String.prototype.format) {
 		String.prototype.format = function() {
@@ -69,11 +70,14 @@ SECRET: 	gwiu1cs80y1x5u7h3dubjhrydynrss2
 		
 		//This allows fast switching of streams by changing the param in the videoplayer object,
 		$('#stream ul li').click(function() {
-			data = $(this).text().split(' '); // data[0] is the channel name. the rest of array not needed
-			flashvars = '<param name=\'flashvars\' value=channel={ch}&start_volume=10&auto_play=false>'.format({
+			data = $(this).text().split(' '); // data[0] or first item is the channel name. the rest of array not needed.
+			
+			// create the channel string based on chosen stream.
+			flashvars = '<param name=\'flashvars\' value=channel={ch}&start_volume=10&auto_play=true>'.format({
 				ch: data[0]});
-			// change the video channel
-			$('#videoplayer').find('param[name=\'flashvars\']').replaceWith(flashvars);
+				
+			// change the video channel via DOM
+			$('#videoplayer_embed').find('param[name=\'flashvars\']').replaceWith(flashvars);
 			
 			// change the chat to the corresponding video channel
 			chat = 'http://twitch.tv/chat/embed?channel={ch}&amp;popout_chat=true'.format({
@@ -84,42 +88,70 @@ SECRET: 	gwiu1cs80y1x5u7h3dubjhrydynrss2
 		<!-- Debug -- >
 		//var test2 = $('#videoplayer').find('param[name=\'flashvars\']').val();
 		//console.log(test2);
-		console.log($('#videoplayer').css('width') + ' by ' + $('#videoplayer').css('height'));
+		//console.log($('#videoplayer').css('width') + ' by ' + $('#videoplayer').css('height'));
 		<!-- End Debug -- >
 	}
 
+	/*
+	* Creates and returns an object that has resolutions for 3 panels. left, center and right.
+	*/
 	function calcResolutions() {
-		var hOffset = 0;
+		var hOffset = 22; //Height for our header
 		var currWinWidth = $(window).width();
 		var currWinHeight = $(window).height();
-		var leftRightPanelWidth = Math.floor(0.10 * currWinWidth);
-		var leftRightPanelHeight = Math.floor(currWinHeight - hOffset);
-		var centerPanelWidth = Math.ceil(0.80 * currWinWidth);
-		var centerPanelHeight = Math.ceil(currWinHeight - hOffset);
+		var headerPanelWidth = Math.floor(currWinWidth);
+		var headerPanelHeight = Math.floor(hOffset);
+		var leftPanelWidth = Math.floor(0.12 * currWinWidth);
+		var leftPanelHeight = Math.floor(currWinHeight - hOffset);
+		var rightPanelWidth = Math.ceil(0.18 * currWinWidth);
+		var rightPanelHeight = Math.floor(currWinHeight - hOffset);
+		var centerPanelWidth = Math.floor(0.70 * currWinWidth);
+		var centerPanelHeight = Math.floor(currWinHeight - hOffset);
+		
+		var leftPlusCenterWidth = Math.floor(0.82 * currWinWidth);
+		var leftPlusCenterHeight = Math.floor(currWinHeight - hOffset);
+		var rightPlusCenterWidth = Math.ceil(0.88 * currWinWidth);
+		var rightPlusCenterHeight = Math.floor(currWinHeight - hOffset);
+		var centerOnlyWidth = Math.floor(currWinWidth);
+		var centerOnlyHeight = Math.floor(currWinHeight - hOffset);
 		
 		<!-- Debug -->
-<!-- 		console.log('leftRight: ' + leftRightPanelWidth + 'x' + leftRightPanelHeight); -->
+<!-- 		console.log('left: ' + leftPanelWidth + 'x' + leftPanelHeight); -->
+<!-- 		console.log('right: ' + rightPanelWidth + 'x' + rightPanelHeight); -->
 <!-- 		console.log('center: ' + centerPanelWidth + 'x' + centerPanelHeight); -->
+		console.log('leftCenter: ' + leftPlusCenterWidth + 'x' + leftPlusCenterHeight);
+		console.log('rightCenter: ' + rightPlusCenterWidth + 'x' + rightPlusCenterHeight);
+		console.log('centerOnly: ' + centerOnlyWidth + 'x' + centerOnlyHeight);
 		<!-- End Debug -- >
 		
-		return {leftRightW: leftRightPanelWidth, leftRightH: leftRightPanelHeight,
-				centerPanelW: centerPanelWidth, centerPanelH: centerPanelHeight};
+		return {headerW: headerPanelWidth, headerH: headerPanelHeight,
+				leftW: leftPanelWidth, leftH: leftPanelHeight,
+				rightW: rightPanelWidth, rightH: rightPanelHeight,
+				centerW: centerPanelWidth, centerH: centerPanelHeight,
+				leftCenterW: leftPlusCenterWidth, leftCenterH: leftPlusCenterHeight,
+				rightCenterW: rightPlusCenterWidth, rightCenterH: rightPlusCenterHeight,
+				centerOnlyH: centerOnlyWidth, centerOnlyH: centerOnlyHeight
+				};
 				
 	}
 	
 	function applyResolutions() {
 		res = calcResolutions();
-		$('#left').css('width', res.leftRightW);
-		$('#left').css('height', res.leftRightH);
-		$('#right').css('width', res.leftRightW);
-		$('#right').css('height', res.leftRightH);
-		$('#center').css('width', res.centerPanelW);
-		$('#center').css('height', res.centerPanelH);
-		$('#videoplayer').css('width', res.centerPanelW);
-		$('#videoplayer').css('height', res.centerPanelH);
-		//$('#chatemx').height('res.res.leftRightH');
+		$('#header').css('width',res.headerW);
+		$('#header').css('height',res.headerH);
+		$('#left').css('width', res.leftW);
+		$('#left').css('height', res.leftH);
+		$('#right').css('width', res.rightW);
+		$('#right').css('height', res.rightH);
+		$('#center').css('width', res.centerW);
+		$('#center').css('height', res.centerH);
+		$('#videoplayer_embed').css('width', res.centerW);
+		$('#videoplayer_embed').css('height', res.centerH);
+		$('#chat_embed').css('width', res.rightW);
+		$('#chat_embed').css('height', res.rightH);
+		$('#showhide_right').css('padding-left', res.headerW-42);
 	}	
-
+	
 	srlTeamChannels( function(srlJson) {
 		srlTeamChannelTable(srlJson);
 	});
@@ -149,14 +181,43 @@ SECRET: 	gwiu1cs80y1x5u7h3dubjhrydynrss2
 		$("jqueryselector").css("overflow-x","hidden"); //hide horizontal scrollbar	
 	}
 	
-	disableVerticalScrolling();
-	disableHorizontalScrolling();
-
 
 
 	$( document ).ready(function() {
+		var leftShow = true;
+		var rightShow = true;
+		disableVerticalScrolling();
+		disableHorizontalScrolling();
 		applyResolutions();
 		showDebugResolutions()
+		
+		$('#showhide_left').click(function(event) { //FIX!
+			var res = calcResolutions();
+			$('#left').toggle();
+			leftShow = !leftShow;
+			if (leftShow == false) {
+				$('#center').css('width', res.leftCenterW);
+				$('#center').css('height', res.leftCenterH);			
+				$('#videoplayer_embed').css('width', res.leftCenterW);
+				$('#videoplayer_embed').css('height', res.leftCenterH);				
+			} else {
+				applyResolutions();
+			}
+		});
+		
+		$('#showhide_right').click(function(event) {
+			$('#right').toggle();
+			rightShow = !rightShow;
+			if (rightShow == false) {
+				$('#center').css('width', res.rightCenterW);
+				$('#center').css('height', res.rightCenterH);	
+				$('#videoplayer_embed').css('width', res.rightCenterW);
+				$('#videoplayer_embed').css('height', res.rightCenterH);				
+			} else {
+				applyResolutions();
+			}
+
+		});
 	});
 	
 	$( window ).resize(function() {
@@ -167,7 +228,7 @@ SECRET: 	gwiu1cs80y1x5u7h3dubjhrydynrss2
 
 	
 	</script>
-
+<!--
 <style type='text/css'>
 	#centerInfoDebug{
 		padding:8px;
@@ -187,14 +248,17 @@ SECRET: 	gwiu1cs80y1x5u7h3dubjhrydynrss2
 		width:100px;
 	}
 </style>
-
+-->
 	</head>
 	<body>
-		<!--<div id='header'></div>-->
+		<div id='header' class='hidden'>
+			<span style=''><img id='showhide_left' src='img/32x32_left_right_arrow.png' alt='min'></span>
+			<span style='position: absolute'><img id='showhide_right' src='img/32x32_left_right_arrow.png' alt='min'></span>
+		</div>
 		<div id='container'>
 		
-			<div id='left' class='column'>
-				<div id='leftInfoDebug'></div>
+			<div id='left' class='panel hidden'>
+<!--				<div id='leftInfoDebug'></div> -->
 				<div id='streams'>
 					<div id='stream'>
 						<ul></ul>
@@ -205,13 +269,13 @@ SECRET: 	gwiu1cs80y1x5u7h3dubjhrydynrss2
 			<div id='center'>
 <!-- 				<div id='centerInfoDebug'></div> -->
 
-				<div id='videoplayer'>
+				<div id='videoplayer'></div>
 					<object bgcolor='#000000' 
 					data='http://www.twitch.tv/widgets/archive_embed_player.swf' 
-					id='clip_embed_player_flash' 
+					id='videoplayer_embed' 
 					type='application/x-shockwave-flash' 
-					width='1400'
-					height='920' >
+					width='800'
+					height='600' >
 					<param name='movie' value='http://www.twitch.tv/widgets/archive_embed_player.swf' />
 					<param name='allowScriptAccess' value='always' />
 					<param name='allowNetworking' value='all' />
@@ -219,11 +283,10 @@ SECRET: 	gwiu1cs80y1x5u7h3dubjhrydynrss2
 					<param name='flashvars' value='auto_play=false'/>
 					</object>
 				</div>
-			</div>
 
-			<div id='right' class='column'>
-				<div id='rightInfoDebug'></div>
-				<div id='chatbox' class='hidden'>
+			<div id='right' class='panel hidden'>
+				<!-- <div id='rightInfoDebug'></div> -->
+				<div id='chatbox'>
 					<iframe id='chat_embed'
 							frameborder='0'
 							scrolling='yes'
