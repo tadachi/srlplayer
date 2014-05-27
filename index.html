@@ -45,7 +45,7 @@ SECRET: 	gwiu1cs80y1x5u7h3dubjhrydynrss2
 	
 	function srlTeamChannels(callback) {
 		//'http://api.speedrunslive.com/test/team'
-		$.getJSON('http://api.speedrunslive.com/test/team',function(json){
+		$.getJSON('srlJson.json',function(json){
 			srlTeamChannelTable(json);
 		});
 
@@ -53,7 +53,7 @@ SECRET: 	gwiu1cs80y1x5u7h3dubjhrydynrss2
 	
 	function srlTeamChannelTable(srlJson, callback) {
 		if (srlJson) {
-			for (var i = 0; i < 40; i++ ) {
+			for (var i = 0; i < 30; i++ ) {
 				//console.log(srlJson.channels[i].channel);
 				var txt = '';
 				var channel = srlJson.channels[i].channel
@@ -126,9 +126,9 @@ SECRET: 	gwiu1cs80y1x5u7h3dubjhrydynrss2
 <!-- 		console.log('left: ' + leftPanelWidth + 'x' + leftPanelHeight); -->
 <!-- 		console.log('right: ' + rightPanelWidth + 'x' + rightPanelHeight); -->
 <!-- 		console.log('center: ' + centerPanelWidth + 'x' + centerPanelHeight); -->
-		console.log('leftCenter: ' + leftPlusCenterWidth + 'x' + leftPlusCenterHeight);
-		console.log('rightCenter: ' + rightPlusCenterWidth + 'x' + rightPlusCenterHeight);
-		console.log('centerOnly: ' + centerOnlyWidth + 'x' + centerOnlyHeight);
+<!-- 		console.log('leftCenter: ' + leftPlusCenterWidth + 'x' + leftPlusCenterHeight); -->
+<!-- 		console.log('rightCenter: ' + rightPlusCenterWidth + 'x' + rightPlusCenterHeight); -->
+<!-- 		console.log('centerOnly: ' + centerOnlyWidth + 'x' + centerOnlyHeight); -->
 		<!-- End Debug -- >
 		
 		return {headerW: headerPanelWidth, headerH: headerPanelHeight,
@@ -178,17 +178,43 @@ SECRET: 	gwiu1cs80y1x5u7h3dubjhrydynrss2
 		res = calcResolutions();
 		$('#header').css('width',res.headerW);
 		$('#header').css('height',res.headerH);
-		$('#left').css('width', res.leftW);
-		$('#left').css('height', res.leftH);
-		$('#right').css('width', res.rightW);
-		$('#right').css('height', res.rightH);
-		$('#center').css('width', res.centerW);
-		$('#center').css('height', res.centerH);
-		$('#videoplayer_embed').css('width', res.centerW);
-		$('#videoplayer_embed').css('height', res.centerH);
+		if (leftShow) {
+			$('#left').css('width', res.leftW);
+			$('#left').css('height', res.leftH);		
+		}
+		if (rightShow) {
+			$('#right').css('width', res.rightW);
+			$('#right').css('height', res.rightH);		
+		}
+		if (!leftShow && rightShow) {
+			$('#center').css('width', res.leftCenterW);
+			$('#center').css('height', res.leftCenterH);			
+			$('#videoplayer_embed').css('width', res.leftCenterW);
+			$('#videoplayer_embed').css('height', res.leftCenterH);				
+		}else if (leftShow && !rightShow) {
+			$('#center').css('width', res.rightCenterW);
+			$('#center').css('height', res.rightCenterH);	
+			$('#videoplayer_embed').css('width', res.rightCenterW);
+			$('#videoplayer_embed').css('height', res.rightCenterH);				
+		}else if ( (!leftShow && !rightShow) ) {
+			$('#center').css('width', res.centerOnlyW);
+			$('#center').css('height', res.centerOnlyH);			
+			$('#videoplayer_embed').css('width', res.centerOnlyW);
+			$('#videoplayer_embed').css('height', res.centerOnlyH);		
+		}else if (leftShow && !rightShow) {
+			$('#center').css('width', res.rightCenterW);
+			$('#center').css('height', res.rightCenterH);	
+			$('#videoplayer_embed').css('width', res.rightCenterW);
+			$('#videoplayer_embed').css('height', res.rightCenterH);				
+		}else {
+			$('#center').css('width', res.centerW);
+			$('#center').css('height', res.centerH);
+			$('#videoplayer_embed').css('width', res.centerW);
+			$('#videoplayer_embed').css('height', res.centerH);		
+		}
 		$('#chat_embed').css('width', res.rightW);
 		$('#chat_embed').css('height', res.rightH);
-		$('#showhide_right').css('margin-left', res.headerW-48);
+		$('#showhide_right').css('margin-left', res.headerW-48); //Hack to align image to far right properly
 	}	
 
 	function showHideLeft() {
@@ -222,6 +248,7 @@ SECRET: 	gwiu1cs80y1x5u7h3dubjhrydynrss2
 	function showHideRight() {
 		$('#right').toggle();
 		rightShow = !rightShow;
+		
 		if (leftShow && !rightShow) {
 			$('#center').css('width', res.rightCenterW);
 			$('#center').css('height', res.rightCenterH);	
@@ -264,8 +291,6 @@ SECRET: 	gwiu1cs80y1x5u7h3dubjhrydynrss2
 		applyResolutions();
 	});
 
-
-	
 	</script>
 <!--
 <style type='text/css'>
