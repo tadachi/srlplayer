@@ -53,7 +53,18 @@ margin:0px 0px 0px 0px;
 padding:0px 0px 0px 0px;
 overflow:hidden;
 text-overflow:ellipsis;
+white-space: wrap;
 font-size:65%;
+}
+
+#left li.even {
+	color:white;
+	background-color: grey;
+}
+
+#left li.odd {
+	color:grey;
+	background-color: white;
 }
 
 #center

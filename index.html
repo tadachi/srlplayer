@@ -12,6 +12,7 @@ SECRET: 	gwiu1cs80y1x5u7h3dubjhrydynrss2
 	<link rel='stylesheet' href='main.css'>
 	<script src='js/jquery-2.0.3.min.js'></script>
 	<script src='js/twitch.min.js'></script>
+	<script src='js/jquery.marquee-1.3.1.min.js'></script>
 	<script>
 		Twitch.init({clientId: '5wf6b3t4dqr0rfbthgkqqlz79yy9rg'}, function(error, status) {
 		  if (error) {
@@ -44,8 +45,9 @@ SECRET: 	gwiu1cs80y1x5u7h3dubjhrydynrss2
 	}	
 	
 	function srlTeamChannels(callback) {
-		//'http://api.speedrunslive.com/test/team'
-		$.getJSON('srlJson.json',function(json){
+		//'http://api.speedrunslive.com/test/team' 	<--- LIVE DATA
+		//'srlJson.json' 							<--- Dev
+		$.getJSON('http://api.speedrunslive.com/test/team',function(json){
 			srlTeamChannelTable(json);
 		});
 
@@ -53,19 +55,25 @@ SECRET: 	gwiu1cs80y1x5u7h3dubjhrydynrss2
 	
 	function srlTeamChannelTable(srlJson, callback) {
 		if (srlJson) {
-			for (var i = 0; i < 30; i++ ) {
+			for (var i = 0; i < 31; i++ ) {
 				//console.log(srlJson.channels[i].channel);
 				var txt = '';
+				var list1 = '';
 				var channel = srlJson.channels[i].channel
 				var image = '<img width=60 height=60 align=\'left\' src=\' ' +
 					channel.image.size70 + '\' alt=min>';
-
-				txt += '{tag1}{img1}{name} - {title}{tag2}'.format({
-					tag1: '<li value={n}>'.format({n: i}),
+				var list1 = '';
+				if (i%2) { 
+					list1 = '<li class=\'odd\' value={n}>'.format({n: i})
+				} else {
+					list1 = '<li class=\'even\' value={n}>'.format({n: i})
+				}
+				txt += '{opentag}{img1}{name} - {title}{endtag}'.format({
+					opentag: list1,
 					img1: image,					
-					name: channel.display_name,
+					name: '<span style=\'font-size:140%\'>' + channel.display_name + '</span>',
 					title: channel.title,
-					tag2: '</li>'
+					endtag: '</li>'
 					})
 
 				if (txt != '') {
@@ -106,12 +114,19 @@ SECRET: 	gwiu1cs80y1x5u7h3dubjhrydynrss2
 		var hOffset = 22; //Height for our header
 		var currWinWidth = $(window).width();
 		var currWinHeight = $(window).height();
+		
 		var headerPanelWidth = Math.floor(currWinWidth);
 		var headerPanelHeight = Math.floor(hOffset);
+		
+		var containerWidth = (currWinWidth);
+		var containerHeight = (currWinHeight);
+		
 		var leftPanelWidth = Math.floor(0.12 * currWinWidth);
 		var leftPanelHeight = Math.floor(currWinHeight - hOffset);
+		
 		var rightPanelWidth = Math.ceil(0.18 * currWinWidth);
 		var rightPanelHeight = Math.floor(currWinHeight - hOffset);
+		
 		var centerPanelWidth = Math.floor(0.70 * currWinWidth);
 		var centerPanelHeight = Math.floor(currWinHeight - hOffset);
 		
@@ -131,7 +146,9 @@ SECRET: 	gwiu1cs80y1x5u7h3dubjhrydynrss2
 <!-- 		console.log('centerOnly: ' + centerOnlyWidth + 'x' + centerOnlyHeight); -->
 		<!-- End Debug -- >
 		
-		return {headerW: headerPanelWidth, headerH: headerPanelHeight,
+		return {
+				containerW: containerWidth, containerH: containerHeight,
+				headerW: headerPanelWidth, headerH: headerPanelHeight,
 				leftW: leftPanelWidth, leftH: leftPanelHeight,
 				rightW: rightPanelWidth, rightH: rightPanelHeight,
 				centerW: centerPanelWidth, centerH: centerPanelHeight,
@@ -148,20 +165,6 @@ SECRET: 	gwiu1cs80y1x5u7h3dubjhrydynrss2
 		srlTeamChannelTable(srlJson);
 	});
 
-
-	function showDebugResolutions() {
-		$('#leftInfoDebug').text(' ( '
-					+ $('#left').width() + 'x' + $('#left').height() + ' )');
-
-		$('#rightInfoDebug').text(' ( '
-					+ $('#right').width() + 'x' + $('#right').height() + ' )');				
-					
-		$('#centerInfoDebug').resize(function () {
-			$('#centerInfoDebug').text(' ( ' + $('#center').width() 
-									 + ' x ' + $('#center').height() + ' )');
-		});	
-	}	
-	
 	function disableVerticalScrolling() {
 		$('html, body').css({
 			'overflow': 'hidden',
@@ -290,7 +293,20 @@ SECRET: 	gwiu1cs80y1x5u7h3dubjhrydynrss2
 	$( window ).resize(function() {
 		applyResolutions();
 	});
+/*
+	function showDebugResolutions() {
+		$('#leftInfoDebug').text(' ( '
+					+ $('#left').width() + 'x' + $('#left').height() + ' )');
 
+		$('#rightInfoDebug').text(' ( '
+					+ $('#right').width() + 'x' + $('#right').height() + ' )');				
+					
+		$('#centerInfoDebug').resize(function () {
+			$('#centerInfoDebug').text(' ( ' + $('#center').width() 
+									 + ' x ' + $('#center').height() + ' )');
+		});	
+	}		
+*/
 	</script>
 <!--
 <style type='text/css'>
@@ -311,15 +327,25 @@ SECRET: 	gwiu1cs80y1x5u7h3dubjhrydynrss2
 		border:1px solid blue;
 		width:100px;
 	}
+	
+	#headerInfoDebug{
+		position: absolute;
+		padding:8px;
+		border:1px solid blue;
+		width:100px;
+	}
 </style>
 -->
 	</head>
 	<body>
+
+		<div id='container'>
+
 		<div id='header' class='hidden'>
+			<!-- <div id='headerInfoDebug'></div> -->
 			<img id='showhide_left' src='img/32x32_left_right_arrow.png' alt='min'>
 			<img id='showhide_right' src='img/32x32_left_right_arrow.png' alt='min'>
 		</div>
-		<div id='container'>
 		
 			<div id='left' class='panel hidden'>
 <!--				<div id='leftInfoDebug'></div> -->
