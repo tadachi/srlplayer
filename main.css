@@ -27,11 +27,10 @@ background-color:brown;
 
 #left
 {
-
-float:inherit;
+float:left;
 position:relative;
-width:200px;
-height:900px;
+width:100px;
+height:100px;
 overflow: scroll;
 overflow-x: hidden;
 background-color:grey;
@@ -58,34 +57,30 @@ font-size:65%;
 }
 
 #left li.even {
-	color:white;
-	background-color: grey;
+color:white;
+background-color: grey;
 }
 
 #left li.odd {
-	color:grey;
-	background-color: white;
+color:grey;
+background-color: white;
 }
 
 #center
 {
-
-float:inherit;
+float:left;
 position:relative;
-width:1450px;
-height:900px;
+width:100px;
+height:100px;
 background-color:grey;
 }
 
 #right
 {
-
 float:right;
 position:relative;
-width:200px;
-height:900px;
-
+width:100px;
+height:100px;
 background-color:blue;
-
 }
 
