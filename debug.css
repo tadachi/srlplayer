@@ -1,0 +1,24 @@
+#centerInfoDebug{
+	padding:8px;
+	border:1px solid blue;
+	width:100px;
+}
+
+#leftInfoDebug{
+	padding:8px;
+	border:1px solid blue;
+	width:100px;
+}
+
+#rightInfoDebug{
+	padding:8px;
+	border:1px solid blue;
+	width:100px;
+}
+
+#headerInfoDebug{
+	position: absolute;
+	padding:8px;
+	border:1px solid blue;
+	width:100px;
+}
