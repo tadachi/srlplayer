@@ -1,9 +1,3 @@
-<!-- 
-http://24.69.102.51
-CLIENT ID: 	5wf6b3t4dqr0rfbthgkqqlz79yy9rgr 
-NAME:		tplyr
-SECRET: 	gwiu1cs80y1x5u7h3dubjhrydynrss2
--->
 <!DOCTYPE html>
 <html lang='en'>
   <head>
@@ -33,8 +27,7 @@ SECRET: 	gwiu1cs80y1x5u7h3dubjhrydynrss2
 	</script>
 	
 	<script>
-	var leftShow = true;
-	var rightShow = true;
+
 	
 	if (!String.prototype.format) {
 		String.prototype.format = function() {
@@ -49,7 +42,7 @@ SECRET: 	gwiu1cs80y1x5u7h3dubjhrydynrss2
 		}
 	}	
 	
-	function loadSrlTeamChannels() {
+	function loadSrlTeamChannels() { //Check for Memory Leaks
 		//'http://api.speedrunslive.com/test/team' 	<--- LIVE DATA
 		//'srlJson.json' 							<--- Dev
 		$.getJSON('http://api.speedrunslive.com/test/team',function(json){
@@ -58,7 +51,7 @@ SECRET: 	gwiu1cs80y1x5u7h3dubjhrydynrss2
 
 	}
 	
-	function srlTeamChannelTable(srlJson) {
+	function srlTeamChannelTable(srlJson) { //Check for Memory Leaks
 
 		if (srlJson) {
 			try {
@@ -93,59 +86,55 @@ SECRET: 	gwiu1cs80y1x5u7h3dubjhrydynrss2
 				console.log(err + ' (means there\'s no more streams to load)')
 			}
 
-			enableFastStreamSwitch();
-		}
-	}
+			//This allows fast switching of streams by changing the param in the videoplayer object,
+			$('#streams ul li').click( function() {
+				data = $(this).text().split(' '); // data[0] or first item is the channel name. the rest of array not needed.
 
-	function enableFastStreamSwitch() {
-
-		//This allows fast switching of streams by changing the param in the videoplayer object,
-		$('#streams ul li').on( 'click', function() {
-			data = $(this).text().split(' '); // data[0] or first item is the channel name. the rest of array not needed.
-
-			// Create the channel string based on chosen stream.
-			flashvars = '<param name=\'flashvars\' value=channel={ch}&start_volume=10&auto_play=true>'.format({
-				ch: data[0]});
+				// Create the channel string based on chosen stream.
+				flashvars = '<param name=\'flashvars\' value=channel={ch}&start_volume=10&auto_play=true>'.format({
+					ch: data[0]});
+					
+				// Change the video channel via DOM
+				$('#videoplayer_embed').find('param[name=\'flashvars\']').replaceWith(flashvars);
 				
-			// Change the video channel via DOM
-			$('#videoplayer_embed').find('param[name=\'flashvars\']').replaceWith(flashvars);
-			
-			// Change the chat to the corresponding video channel.
-			chat = 'http://twitch.tv/chat/embed?channel={ch}&amp;popout_chat=true'.format({
-				ch: data[0]});
-			$('#chat_embed').prop('src', chat);
-		});			
+				// Change the chat to the corresponding video channel.
+				chat = 'http://twitch.tv/chat/embed?channel={ch}&amp;popout_chat=true'.format({
+					ch: data[0]});
+				$('#chat_embed').attr('src', chat);
+
+			});		
+		}
 	}
 	
 	/*
 	* Creates and returns an object that has resolutions for 3 panels. left, center and right.
 	*/
 	function calcResolutions() {
-		var hOffset = 22; //Height for our header
-		var currWinWidth = $(window).width();
-		var currWinHeight = $(window).height();
+		hOffset = 22; //Height for our header
+		currWinWidth = $(window).width();
+		currWinHeight = $(window).height();
 		
-		var headerPanelWidth = Math.floor(currWinWidth);
-		var headerPanelHeight = Math.floor(hOffset);
+		headerPanelWidth = Math.floor(currWinWidth);
+		headerPanelHeight = Math.floor(hOffset);
 		
-		var containerWidth = (currWinWidth);
-		var containerHeight = (currWinHeight);
+		containerWidth = (currWinWidth);
+		containerHeight = (currWinHeight);
 		
-		var leftPanelWidth = Math.floor(0.12 * currWinWidth);
-		var leftPanelHeight = Math.floor(currWinHeight - hOffset);
+		leftPanelWidth = Math.floor(0.12 * currWinWidth);
+		leftPanelHeight = Math.floor(currWinHeight - hOffset);
 		
-		var rightPanelWidth = Math.ceil(0.18 * currWinWidth);
-		var rightPanelHeight = Math.floor(currWinHeight - hOffset);
+		rightPanelWidth = Math.floor(0.18 * currWinWidth);
+		rightPanelHeight = Math.floor(currWinHeight - hOffset);
 		
-		var centerPanelWidth = Math.floor(0.70 * currWinWidth);
-		var centerPanelHeight = Math.floor(currWinHeight - hOffset);
+		centerPanelWidth = Math.floor(0.70 * currWinWidth);
+		centerPanelHeight = Math.floor(currWinHeight - hOffset);
 		
-		var leftPlusCenterWidth = Math.floor(0.82 * currWinWidth);
-		var leftPlusCenterHeight = Math.floor(currWinHeight - hOffset);
-		var rightPlusCenterWidth = Math.ceil(0.88 * currWinWidth);
-		var rightPlusCenterHeight = Math.floor(currWinHeight - hOffset);
-		var centerOnlyWidth = Math.floor(currWinWidth);
-		var centerOnlyHeight = Math.floor(currWinHeight - hOffset);
+		leftPlusCenterWidth = Math.floor(0.82 * currWinWidth);
+		leftPlusCenterHeight = Math.floor(currWinHeight - hOffset);
+		rightPlusCenterWidth = Math.ceil(0.88 * currWinWidth);
+		rightPlusCenterHeight = Math.floor(currWinHeight - hOffset);
+		centerOnlyWidth = Math.floor(currWinWidth);
+		centerOnlyHeight = Math.floor(currWinHeight - hOffset);
 		
 		<!-- Debug -->
 <!-- 		console.log('left: ' + leftPanelWidth + 'x' + leftPanelHeight); -->
@@ -189,6 +178,10 @@ SECRET: 	gwiu1cs80y1x5u7h3dubjhrydynrss2
 		
 		$('#header').css('width',res.headerW);
 		$('#header').css('height',res.headerH);
+
+		$('#left ul').css('width', res.leftW);		
+		$('#left ul li').css('width', res.leftW);
+
 		if (leftShow) {
 			$('#left').css('width', res.leftW);
 			$('#left').css('height', res.leftH);		
@@ -218,14 +211,18 @@ SECRET: 	gwiu1cs80y1x5u7h3dubjhrydynrss2
 			$('#videoplayer_embed').css('width', res.rightCenterW);
 			$('#videoplayer_embed').css('height', res.rightCenterH);				
 		}else {
+			console.log('test');
 			$('#center').css('width', res.centerW);
 			$('#center').css('height', res.centerH);
 			$('#videoplayer_embed').css('width', res.centerW);
 			$('#videoplayer_embed').css('height', res.centerH);		
 		}
+		
 		$('#chat_embed').css('width', res.rightW);
 		$('#chat_embed').css('height', res.rightH);
 		$('#showhide_right').css('margin-left', res.headerW-48); //Hack to align image to far right properly
+;
+	
 	}	
 
 	function showHideLeft() {
@@ -284,6 +281,9 @@ SECRET: 	gwiu1cs80y1x5u7h3dubjhrydynrss2
 
 	}
 	
+	var leftShow = true;
+	var rightShow = true;	
+	
 	$( document ).ready(function() {
 		disableVerticalScrolling();
 		disableHorizontalScrolling();
@@ -313,11 +313,11 @@ SECRET: 	gwiu1cs80y1x5u7h3dubjhrydynrss2
 
 		<div id='container'>
 
-		<div id='header' class='hidden'>
-			<!-- <div id='headerInfoDebug'></div> -->
-			<img id='showhide_left' src='img/32x32_left_right_arrow.png' alt='min'>
-			<img id='showhide_right' src='img/32x32_left_right_arrow.png' alt='min'>
-		</div>
+			<div id='header' class='hidden'>
+				<!-- <div id='headerInfoDebug'></div> -->
+				<img id='showhide_left' src='img/32x32_left_right_arrow.png' alt='min'>
+				<img id='showhide_right' src='img/32x32_left_right_arrow.png' alt='min'>
+			</div>
 		
 			<div id='left' class='panel hidden'>
 <!--				<div id='leftInfoDebug'></div> -->
@@ -328,8 +328,7 @@ SECRET: 	gwiu1cs80y1x5u7h3dubjhrydynrss2
 
 			<div id='center'>
 <!-- 				<div id='centerInfoDebug'></div> -->
-
-				<div id='videoplayer'></div>
+				<div id='videoplayer'>
 					<object bgcolor='#000000' 
 					data='http://www.twitch.tv/widgets/archive_embed_player.swf' 
 					id='videoplayer_embed' 
@@ -343,7 +342,8 @@ SECRET: 	gwiu1cs80y1x5u7h3dubjhrydynrss2
 					<param name='flashvars' value='auto_play=false'/>
 					</object>
 				</div>
-
+			</div>
+			
 			<div id='right' class='panel hidden'>
 				<!-- <div id='rightInfoDebug'></div> -->
 				<div id='chatbox'>
@@ -357,9 +357,6 @@ SECRET: 	gwiu1cs80y1x5u7h3dubjhrydynrss2
 				</div>	
 			</div>	
 			
-		</div>
-		<div id='footer-wrapper'>
-		  <div id='footer'></div>
 		</div>
 	
 	</body>
