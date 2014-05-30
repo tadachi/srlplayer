@@ -141,7 +141,7 @@
 	* Creates and returns an object that has resolutions for 3 panels. left, center and right.
 	*/
 	function calcResolutions() {
-		hOffset = 22; //Height for our header
+		hOffset = 26; //Height for our header
 		currWinWidth = $(window).width();
 		currWinHeight = $(window).height();
 		
@@ -251,7 +251,7 @@
 		
 		$('#chat_embed').css('width', res.rightW);
 		$('#chat_embed').css('height', res.rightH);
-		$('#showhide_right').css('margin-left', res.headerW-173); //Hack to align image to far right properly
+		//$('#showhide_right').css('margin-left', res.headerW-173); //Hack to align image to far right properly
 ;
 	
 	}	
@@ -347,9 +347,10 @@
 			<div id='header' class='hidden'>
 				<!-- <div id='headerInfoDebug'></div> -->
 
-				<img id='showhide_left' src='img/small_left_right_arrow.png' alt='min'>
-				&copy; Takumi Adachi
-				<img id='showhide_right' src='img/small_left_right_arrow.png' alt='min'>
+				<img id='showhide_left' width='25' height='25' src='img/small_left_right_arrow.png' alt='min'>
+				<span style='float: right' width='25' height='25'><img id='showhide_right' src='img/small_left_right_arrow.png' alt='min'></span>
+				<span style='margin: 4px 10px 0px 0px; float: right'>&copy;Takumi Adachi</span>
+
 			</div>
 		
 			<div id='left' class='panel hidden'>
