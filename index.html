@@ -3,11 +3,14 @@
   <head>
 	<meta content='text/html; charset=utf-8' http-equiv='content-type'>
 	<title>TwitchPlayer</title>
-	<link rel='stylesheet' href='main.css'>
+	<link rel='stylesheet' href='css/main.css'>
 	<!--<link rel='stylesheet' href='debug.css'>-->
 	<!--<script src='js/debug.js'></script>-->
+	<!-- <script src='js/jquery-2.0.3.min.js'></script> -->
+	<!-- <script src='js/jquery-2.1.0.min.js'></script> -->
 	<script src='js/jquery-2.1.1.min.js'></script>
 	<script src='js/twitch.min.js'></script>
+
 	<script>
 		Twitch.init({clientId: '5wf6b3t4dqr0rfbthgkqqlz79yy9rg'}, function(error, status) {
 		  if (error) {
@@ -27,8 +30,6 @@
 	</script>
 	
 	<script>
-
-	
 	if (!String.prototype.format) {
 		String.prototype.format = function() {
 			var str = this.toString();
@@ -43,8 +44,8 @@
 	}	
 	
 	function loadSrlTeamChannels() { //Check for Memory Leaks
-		//'http://api.speedrunslive.com/test/team' 	<--- LIVE DATA
-		//'srlJson.json' 							<--- Dev
+		//'http://api.speedrunslive.com/test/team' 		<--- LIVE DATA
+		//'test_srlJson.json' 							<--- TEST DATA
 		$.getJSON('http://api.speedrunslive.com/test/team',function(json){
 			srlTeamChannelTable(json);
 		});
@@ -59,7 +60,7 @@
 					var txt = '';
 					var list1 = '';
 					var channel = srlJson.channels[i].channel;
-					//console.log(channel);
+
 					var image = '<img width=60 height=60 align=\'left\' src=\' ' +
 						channel.image.size70 + '\' alt=min>';
 					var list1 = '';
@@ -91,19 +92,49 @@
 				data = $(this).text().split(' '); // data[0] or first item is the channel name. the rest of array not needed.
 
 				// Create the channel string based on chosen stream.
-				flashvars = '<param name=\'flashvars\' value=channel={ch}&start_volume=10&auto_play=true>'.format({
-					ch: data[0]});
-					
-				// Change the video channel via DOM
-				$('#videoplayer_embed').find('param[name=\'flashvars\']').replaceWith(flashvars);
+				flashvars = 'channel={CHANNEL}&auto_play=true'.format({
+					CHANNEL: data[0]});
+	
+				// Change the video channel via DOM			
+				$('#videoplayer_embed param[name=flashvars]').attr('value', flashvars );
+				
+				// Reinject the videoplayer with the new params pointing to the chosen stream.
+				reloadVideoPlayer();
 				
 				// Change the chat to the corresponding video channel.
-				chat = 'http://twitch.tv/chat/embed?channel={ch}&amp;popout_chat=true'.format({
+				chatsrc = 'http://twitch.tv/chat/embed?channel={ch}&amp;popout_chat=true'.format({
 					ch: data[0]});
-				$('#chat_embed').attr('src', chat);
-
+					
+				$('#chat_embed').attr('src', chatsrc); // this Faster does not work in IE.
+				//reloadChatBox(chatsrc);
+				
 			});		
 		}
+	}
+	
+	function reloadVideoPlayer() { 
+		player = $('#videoplayer');
+
+		origin = player.html();
+
+		player.html(origin);
+
+	}
+	
+	function reloadChatBox(src) {
+		res = calcResolutions();
+	
+		chatbox = $('#chatbox');
+		origin = 	'<iframe ' +
+						'id=\'chat_embed\' ' +
+						'frameborder=\'0\' ' +
+						'scrolling=\'yes\' ' +
+						'src=\'{url}\' '.format({url: src}) +
+						'width=\'{w}\' '.format({w: res.rightW}) +
+						'height=\'{h}\'>'.format({h: res.rightH}) +
+					'</iframe>';
+
+		chatbox.html(origin);
 	}
 	
 	/*
@@ -166,7 +197,7 @@
 	}
 
 	function disableHorizontalScrolling() {
-		$("jqueryselector").css("overflow-x","hidden"); //hide horizontal scrollbar	
+		$("html, body").css("overflow-x","hidden"); //hide horizontal scrollbar	
 	}
 
 	// Apply panel resolutions based on current window sizes to various divs
@@ -220,7 +251,7 @@
 		
 		$('#chat_embed').css('width', res.rightW);
 		$('#chat_embed').css('height', res.rightH);
-		$('#showhide_right').css('margin-left', res.headerW-48); //Hack to align image to far right properly
+		$('#showhide_right').css('margin-left', res.headerW-49); //Hack to align image to far right properly
 ;
 	
 	}	
@@ -315,8 +346,8 @@
 
 			<div id='header' class='hidden'>
 				<!-- <div id='headerInfoDebug'></div> -->
-				<img id='showhide_left' src='img/32x32_left_right_arrow.png' alt='min'>
-				<img id='showhide_right' src='img/32x32_left_right_arrow.png' alt='min'>
+				<img id='showhide_left' src='img/small_left_right_arrow.png' alt='min'>
+				<img id='showhide_right' src='img/small_left_right_arrow.png' alt='min'>
 			</div>
 		
 			<div id='left' class='panel hidden'>
@@ -327,7 +358,7 @@
 			</div>
 
 			<div id='center'>
-<!-- 				<div id='centerInfoDebug'></div> -->
+<!-- 			<div id='centerInfoDebug'></div> -->
 				<div id='videoplayer'>
 					<object bgcolor='#000000' 
 					data='http://www.twitch.tv/widgets/archive_embed_player.swf' 

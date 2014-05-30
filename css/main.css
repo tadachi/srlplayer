@@ -1,7 +1,15 @@
 /* get rid top and side white space bars using margin and height */
+html {
+overflow:hidden;
+overflow-x: hidden;
+overflow-y: hidden;
+}
 
 body {
-margin: 0; 
+margin: 0;
+overflow:hidden;
+overflow-x: hidden;
+overflow-y: hidden; 
 }
 
 ul {
@@ -13,9 +21,12 @@ list-style-type: none;
 
 #container
 {
-overflow:hidden;
 float:left;
 background-color:black;
+
+overflow:hidden;
+overflow-x: hidden;
+overflow-y: hidden;
 }
 
 #header
@@ -32,12 +43,13 @@ float:left;
 position:relative;
 width:100px;
 height:100px;
-overflow: scroll;
-overflow-x: hidden;
 background-color:lightblue;
 color:white;
 font-family: Tahoma, Geneva, sans-serif;
 
+overflow:hidden;
+overflow: scroll;
+overflow-x: hidden;
 }	
 
 #left ul {
@@ -52,10 +64,11 @@ height:inherit;
 float:left;
 margin:0px 0px 0px 0px;
 padding:0px 0px 0px 0px;
-overflow:hidden;
 text-overflow:ellipsis;
 white-space: wrap;
 font-size:65%;
+
+overflow:hidden;
 }
 
 #left li.even {
@@ -84,5 +97,9 @@ position:relative;
 width:100px;
 height:100px;
 background-color:blue;
+
+overflow:hidden;
+overflow-x: hidden;
+overflow-y: hidden;
 }
 
