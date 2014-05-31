@@ -46,7 +46,7 @@
 	function loadSrlTeamChannels() { //Check for Memory Leaks
 		//'http://api.speedrunslive.com/test/team' 		<--- LIVE DATA
 		//'test_srlJson.json' 							<--- TEST DATA
-		$.getJSON('http://api.speedrunslive.com/test/team',function(json){
+		$.getJSON('test_srlJson.json',function(json){
 			srlTeamChannelTable(json);
 		});
 
@@ -188,17 +188,6 @@
 				};
 				
 	}
-	
-	function disableVerticalScrolling() {
-		$('html, body').css({
-			'overflow': 'hidden',
-			'height': '100%'
-		})	
-	}
-
-	function disableHorizontalScrolling() {
-		$("html, body").css("overflow-x","hidden"); //hide horizontal scrollbar	
-	}
 
 	// Apply panel resolutions based on current window sizes to various divs
 	function applyResolutions() {
@@ -316,9 +305,6 @@
 	var rightShow = true;	
 	
 	$( document ).ready(function() {
-		disableVerticalScrolling();
-		disableHorizontalScrolling();
-		
 		loadSrlTeamChannels();
 	
 		applyResolutions();					// Apply panel resolutions based on current window sizes
@@ -342,16 +328,18 @@
 	</head>
 	<body>
 
-		<div id='container'>
-
 			<div id='header' class='hidden'>
 				<!-- <div id='headerInfoDebug'></div> -->
 
 				<img id='showhide_left' width='26' height='26' src='img/small_left_right_arrow.png' alt='min'>
-				<span style='float: right' ><img id='showhide_right' width='26' height='26' src='img/small_left_right_arrow.png' alt='min'></span>
-				<span style='margin: 3px 10px 0px 0px; float: right'>&copy; 2014 Takumi Adachi</span>
+				<span style='' ><img id='showhide_right' width='26' height='26' src='img/small_left_right_arrow.png' alt='min'></span>
+				<span style='margin: 0px 0px 0px 0px;'>&copy; 2014 Takumi Adachi</span>
 
-			</div>
+			</div>	
+	
+		<div id='container'>
+
+
 		
 			<div id='left' class='panel hidden'>
 <!--				<div id='leftInfoDebug'></div> -->
@@ -362,7 +350,7 @@
 
 			<div id='center'>
 <!-- 			<div id='centerInfoDebug'></div> -->
-				<div id='videoplayer'>
+<!-- 				<div id='videoplayer'>
 					<object bgcolor='#000000' 
 					data='http://www.twitch.tv/widgets/archive_embed_player.swf' 
 					id='videoplayer_embed' 
@@ -375,7 +363,7 @@
 					<param name='allowFullScreen' value='true' />
 					<param name='flashvars' value='auto_play=false'/>
 					</object>
-				</div>
+				</div> -->
 			</div>
 			
 			<div id='right' class='panel hidden'>
