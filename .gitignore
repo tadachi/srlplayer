@@ -1,0 +1,12 @@
+*.swp
+*.swo
+*~
+js/jquery-2.0.3.min.map
+js/jquery-2.0.3.min.js
+js/jquery-2.1.0.js
+js/jquery-2.1.0.min.js
+js/jquery-2.1.1.dev.js
+js/debug.js
+dev_diary/
+css/debug.css
+code_references
