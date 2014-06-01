@@ -38,6 +38,7 @@ background-color:brown;
 
 #left
 {
+-webkit-font-smoothing: antialiased;
 font-size: medium;
 position:relative;
 width:100px;
@@ -84,25 +85,27 @@ width:inherit;
 height:inherit;
 padding:0;
 margin:0;
+
 line-height:95%;
 list-style-type: none;
 }
 
 #left li {
-width:inherit;
-height:inherit;
+width: 220px;
+height:60px;
 margin:0px 0px 0px 0px;
 padding:0px 0px 0px 0px;
-/* text-overflow:ellipsis; */
+
+text-overflow:ellipsis;
 white-space: wrap;
-font-size: 65%;
+font-size: 75%;
 
 overflow:hidden;
 }
 
 #left li.even {
 color:white;
-background-color:black;
+background-color:grey;
 }
 
 #left li.odd {

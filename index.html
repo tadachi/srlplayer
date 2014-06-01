@@ -9,27 +9,24 @@
 	<!-- <script src='js/jquery-2.0.3.min.js'></script> -->
 	<!-- <script src='js/jquery-2.1.0.min.js'></script> -->
 	<script src='js/jquery-2.1.1.min.js'></script>
-	<script src='js/twitch.min.js'></script>
-
+	<script src='js/twitch.min.js'></script>	
 	<script>
-		Twitch.init({clientId: '5wf6b3t4dqr0rfbthgkqqlz79yy9rg'}, function(error, status) {
-		  if (error) {
-			// error encountered while loading
-			console.log(error);
-		  }
-		  // the sdk is now loaded
-		  if (status.authenticated) {
-			// user is currently logged in
-		  }
-		  console.log('Twitch API Initialized');
-		});
-		if (typeof jQuery != 'undefined') {  
-			// jQuery is loaded => print the version
-			console.log(jQuery.fn.jquery);
-		}	
-	</script>
+	Twitch.init({clientId: '5wf6b3t4dqr0rfbthgkqqlz79yy9rg'}, function(error, status) {
+	  if (error) {
+		// error encountered while loading
+		console.log(error);
+	  }
+	  // the sdk is now loaded
+	  if (status.authenticated) {
+		// user is currently logged in
+	  }
+	  console.log('Twitch API Initialized');
+	});
+	if (typeof jQuery != 'undefined') {  
+		// jQuery is loaded => print the version
+		console.log(jQuery.fn.jquery);
+	}		
 	
-	<script>
 	if (!String.prototype.format) {
 		String.prototype.format = function() {
 			var str = this.toString();
@@ -45,7 +42,7 @@
 	
 	function loadSrlTeamChannels() { //Check for Memory Leaks
 		//'http://api.speedrunslive.com/test/team' 		<--- LIVE DATA
-		//'srlJson.json' 							<--- TEST DATA
+		//'srlJson.json' 								<--- TEST DATA
 		$.getJSON('http://api.speedrunslive.com/test/team',function(json){
 			srlTeamChannelTable(json);
 		});
@@ -56,31 +53,34 @@
 
 		if (srlJson) {
 			try {
-				for (var i = 0; i < 50; i++ ) {
-					var txt = '';
-					var list1 = '';
-					var channel = srlJson.channels[i].channel;
-
-					var image = '<img width=60 height=60 align=\'left\' src=\' ' +
+				for (var i = 0; i < 50; i++ ) { // Populates the streams from a json file from speedrunslive.com
+					list1 = '';
+					channel = srlJson.channels[i].channel;
+					image = '<img width=60 height=60 align=\'left\' src=\' ' +
 						channel.image.size70 + '\' alt=min>';
-					var list1 = '';
+					list1 = '';
+					
+					currentviewers = '<span style=\'color: red;\'>' + channel.current_viewers + '</span>';
 					
 					if (i%2) { 
 						list1 = '<li class=\'odd\' value={n}>'.format({n: i})
+						streamername = '<span style=\'font-size:140%; color:green;\'>' + channel.display_name + '</span>';
 					} else {
-						list1 = '<li class=\'even\' value={n}>'.format({n: i})
+						list1 = '<li class=\'even\' value={n}>'.format({n: i});
+						streamername = '<span style=\'font-size:140%; color:orange;\'>' + channel.display_name + '</span>';
 					}
 					
-					txt += '{opentag}{img1}{name} - {title}{endtag}'.format({
+					html = '{opentag}{img1}{name} {viewers} - {title} {endtag}'.format({
 						opentag: list1,
 						img1: image,					
-						name: '<span style=\'font-size:140%\'>' + channel.display_name + '</span>',
+						name: streamername,
 						title: channel.title,
+						viewers: currentviewers,
 						endtag: '</li>'
 						})
 
-					if (txt != '') {
-						$('#streams ul').append(txt).removeClass('hidden');
+					if (html != '') {
+						$('#streams ul').append(html).removeClass('hidden');
 					}
 				}
 			} catch(err) { 
@@ -99,40 +99,53 @@
 				$('#videoplayer_embed param[name=flashvars]').attr('value', flashvars );
 				
 				// Reinject the videoplayer with the new params pointing to the chosen stream.
-				reloadVideoPlayer();
+				reloadVideoPlayer(flashvars);
 				
 				// Change the chat to the corresponding video channel.
 				chatsrc = 'http://twitch.tv/chat/embed?channel={ch}&amp;popout_chat=true'.format({
 					ch: data[0]});
 					
-				$('#chat_embed').prop('src', chatsrc); // this Faster does not work in IE.
-<!-- 				reloadChatBox(chatsrc); -->
+				//$('#chat_embed').prop('src', chatsrc);  // this Faster does not work in IE.
+				reloadChatBox(chatsrc);				// reinjects iframes. Slightly slower. Does not work in IE either.
 				
 			});		
 		}
 	}
 	
-	function reloadVideoPlayer() { 
+	function reloadVideoPlayer(streamer) {	// Reinjects HTML with the twitch embed pointing to the stream.
+		res = calcResolutions();
+		
 		player = $('#videoplayer');
-
-		origin = player.html();
-
+		
+		origin = 	["<object bgcolor='#000000'",
+						"data='http://www.twitch.tv/widgets/archive_embed_player.swf'",
+						"id='videoplayer_embed'",
+						"type='application/x-shockwave-flash'", 
+						"width='{w}'".format({w: res.centerW}),
+						"height='{h}'>".format({h: res.centerH}),
+						"<param name='movie' value='http://www.twitch.tv/widgets/archive_embed_player.swf' />",
+						"<param name='allowScriptAccess' value='always' />",
+						"<param name='allowNetworking' value='all' />",
+						"<param name='allowFullScreen' value='true' />",
+						"<param name='flashvars' value='{flashvars}'/>".format({flashvars: streamer}),
+					"</object>"
+					].join('');
+		console.log(origin);
 		player.html(origin);
-
 	}
 	
 	function reloadChatBox(src) {
 		res = calcResolutions();
 	
 		chatbox = $('#chatbox');
-		origin = 	'<iframe ' +
-						'id=\'chat_embed\' ' +
-						'frameborder=\'0\' ' +
-						'scrolling=\'yes\' ' +
-						'src=\'{url}\' '.format({url: src}) +
-						'width=\'{w}\' '.format({w: res.rightW}) +
-						'height=\'{h}\'>'.format({h: res.rightH}) +
-					'</iframe>';
+		origin = 	['<iframe ',
+						'id=\'chat_embed\' ',
+						'frameborder=\'0\' ',
+						'scrolling=\'yes\' ',
+						'src=\'{url}\' '.format({url: src}),
+						'width=\'{w}\' '.format({w: res.rightW}),
+						'height=\'{h}\'>'.format({h: res.rightH}),
+					'</iframe>'].join('');
 
 		chatbox.html(origin);
 	}
@@ -231,7 +244,6 @@
 			$('#videoplayer_embed').css('width', res.rightCenterW);
 			$('#videoplayer_embed').css('height', res.rightCenterH);				
 		}else {
-	
 			$('#center').css('width', res.centerW);
 			$('#center').css('height', res.centerH);
 			$('#videoplayer_embed').css('width', res.centerW);
@@ -307,7 +319,7 @@
 		loadSrlTeamChannels();
 	
 		applyResolutions();					// Apply panel resolutions based on current window sizes
-		
+				
 		$('#showhide_left').click(function(event) {
 			showHideLeft();
 		});
@@ -345,31 +357,20 @@
 			<div id='center'>
 <!-- 			<div id='centerInfoDebug'></div> -->
 				<div id='videoplayer'>
-					<object bgcolor='#000000' 
-					data='http://www.twitch.tv/widgets/archive_embed_player.swf' 
-					id='videoplayer_embed' 
-					type='application/x-shockwave-flash' 
-					width='800'
-					height='600' >
-					<param name='movie' value='http://www.twitch.tv/widgets/archive_embed_player.swf' />
-					<param name='allowScriptAccess' value='always' />
-					<param name='allowNetworking' value='all' />
-					<param name='allowFullScreen' value='true' />
-					<param name='flashvars' value='auto_play=false'/>
-					</object>
 				</div>
 			</div>
 			
 			<div id='right' class='panel hidden'>
 				<!-- <div id='rightInfoDebug'></div> -->
 				<div id='chatbox'>
-					<iframe id='chat_embed'
+				<!-- Uncomment this iframe if you intend to debug chat -->
+<!-- 					<iframe id='chat_embed'
 							frameborder='0'
 							scrolling='yes'
 							src=''
 							width='350'
 							height='500'>
-					</iframe>
+					</iframe> -->
 				</div>
 			</div>
 			
