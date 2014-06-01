@@ -45,8 +45,8 @@
 	
 	function loadSrlTeamChannels() { //Check for Memory Leaks
 		//'http://api.speedrunslive.com/test/team' 		<--- LIVE DATA
-		//'test_srlJson.json' 							<--- TEST DATA
-		$.getJSON('test_srlJson.json',function(json){
+		//'srlJson.json' 							<--- TEST DATA
+		$.getJSON('http://api.speedrunslive.com/test/team',function(json){
 			srlTeamChannelTable(json);
 		});
 
@@ -231,7 +231,7 @@
 			$('#videoplayer_embed').css('width', res.rightCenterW);
 			$('#videoplayer_embed').css('height', res.rightCenterH);				
 		}else {
-			console.log('test');
+	
 			$('#center').css('width', res.centerW);
 			$('#center').css('height', res.centerH);
 			$('#videoplayer_embed').css('width', res.centerW);
@@ -240,15 +240,14 @@
 		
 		$('#chat_embed').css('width', res.rightW);
 		$('#chat_embed').css('height', res.rightH);
-		//$('#showhide_right').css('margin-left', res.headerW-173); //Hack to align image to far right properly
-;
+		$('#showhide_right').css('margin-left', res.headerW-52); //Hack to align image to far right properly
 	
 	}	
 
 	function showHideLeft() {
 		$('#left').toggle();
 		leftShow = !leftShow;
-
+		console.log(leftShow);
 		if (!leftShow && rightShow) {
 			$('#center').css('width', res.leftCenterW);
 			$('#center').css('height', res.leftCenterH);			
@@ -328,18 +327,17 @@
 	</head>
 	<body>
 
-			<div id='header' class='hidden'>
-				<!-- <div id='headerInfoDebug'></div> -->
 
-				<img id='showhide_left' width='26' height='26' src='img/small_left_right_arrow.png' alt='min'>
-				<span style='' ><img id='showhide_right' width='26' height='26' src='img/small_left_right_arrow.png' alt='min'></span>
-				<span style='margin: 0px 0px 0px 0px;'>&copy; 2014 Takumi Adachi</span>
-
-			</div>	
 	
 		<div id='container'>
 
+			<div id='header' class='hidden'>
+				<!-- <div id='headerInfoDebug'></div> -->
+				<span style='position: relative; margin: 0px 0px 0px 0px;'><img id='showhide_left' width='26' height='26' src='img/small_left_right_arrow.png' alt='min'></span>
+				<span style='position: absolute; margin: 4px 0px 0px 30px;'>&copy; 2014 Takumi Adachi</span>
+				<span style='position: absolute; ' ><img id='showhide_right' width='26' height='26' src='img/small_left_right_arrow.png' alt='min'></span>
 
+			</div>	
 		
 			<div id='left' class='panel hidden'>
 <!--				<div id='leftInfoDebug'></div> -->
@@ -350,7 +348,7 @@
 
 			<div id='center'>
 <!-- 			<div id='centerInfoDebug'></div> -->
-<!-- 				<div id='videoplayer'>
+				<div id='videoplayer'>
 					<object bgcolor='#000000' 
 					data='http://www.twitch.tv/widgets/archive_embed_player.swf' 
 					id='videoplayer_embed' 
@@ -363,7 +361,7 @@
 					<param name='allowFullScreen' value='true' />
 					<param name='flashvars' value='auto_play=false'/>
 					</object>
-				</div> -->
+				</div>
 			</div>
 			
 			<div id='right' class='panel hidden'>
@@ -376,8 +374,7 @@
 							width='350'
 							height='500'>
 					</iframe>
-				</div>	
-			</div>	
+				</div></div>
 			
 		</div>
 	
