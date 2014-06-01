@@ -105,8 +105,8 @@
 				chatsrc = 'http://twitch.tv/chat/embed?channel={ch}&amp;popout_chat=true'.format({
 					ch: data[0]});
 					
-				$('#chat_embed').attr('src', chatsrc); // this Faster does not work in IE.
-				//reloadChatBox(chatsrc);
+				$('#chat_embed').prop('src', chatsrc); // this Faster does not work in IE.
+<!-- 				reloadChatBox(chatsrc); -->
 				
 			});		
 		}
@@ -326,17 +326,13 @@
 
 	</head>
 	<body>
-
-
-	
 		<div id='container'>
 
 			<div id='header' class='hidden'>
 				<!-- <div id='headerInfoDebug'></div> -->
 				<span style='position: relative; margin: 0px 0px 0px 0px;'><img id='showhide_left' width='26' height='26' src='img/small_left_right_arrow.png' alt='min'></span>
-				<span style='position: absolute; margin: 4px 0px 0px 30px;'>&copy; 2014 Takumi Adachi</span>
+				<span style='position: absolute; margin: 4px 0px 0px 30px; font-size: medium;'>&copy; 2014 Takumi Adachi</span>
 				<span style='position: absolute; ' ><img id='showhide_right' width='26' height='26' src='img/small_left_right_arrow.png' alt='min'></span>
-
 			</div>	
 		
 			<div id='left' class='panel hidden'>
@@ -374,7 +370,8 @@
 							width='350'
 							height='500'>
 					</iframe>
-				</div></div>
+				</div>
+			</div>
 			
 		</div>
 	
