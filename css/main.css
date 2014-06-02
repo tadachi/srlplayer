@@ -89,8 +89,8 @@ list-style-type: none;
 }
 
 #left li {
-width: 232px;
-height:60px;
+width:inherit;
+height:inherit;
 margin:0px 0px 0px 0px;
 padding:0px 0px 0px 0px;
 
