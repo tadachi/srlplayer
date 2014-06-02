@@ -255,6 +255,7 @@
 		$('#chat_embed').css('width', res.rightW);
 		$('#chat_embed').css('height', res.rightH);
 		$('#showhide_right').css('margin-left', res.headerW-47); //Align image to far right properly.
+		$('#refresh_streams').css('margin-left', res.leftW-42);		
 		//$('#copyright').css('margin-left', res.headerW-180); //Align to far right properly.	
 	}	
 
@@ -322,7 +323,7 @@
 	$( document ).ready(function() {
 		loadSrlTeamChannels();
 	
-		applyResolutions();					// Apply panel resolutions based on current window sizes
+		applyResolutions();	// Apply panel resolutions based on current window sizes
 				
 		$('#showhide_left').click(function(event) {
 			showHideLeft();
@@ -353,7 +354,7 @@
 				<div id='showhide_left' class="glyph flaticon-arrowheads3"></div>
 				<span style='position: absolute;'><div id='showhide_right' class="glyph flaticon-right39"></div></span>
 				<span id='copyright' class='senlightfont' style='position: absolute; margin: 4px 0px 0px 30px; font-size: medium;'>&copy; 2014 takada</span>
-				<span id='refresh_streams' style='position: absolute; margin: 0px 0px 0px 207px;'><div class="glyph-icon flaticon-two123"></div></span>				
+				<span id='refresh_streams' style='position: absolute;'><div class="glyph-icon flaticon-two123"></div></span>				
 				<!-- <img id='showhide_left' width='26' height='26' src='img/small_left_right_arrow.png' alt='min'></span> -->
 				<!-- <span style='position: absolute;'><img id='showhide_right' width='26' height='26' src='img/small_left_right_arrow.png' alt='min'></span> -->
 			</div>	
