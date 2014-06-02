@@ -13,20 +13,20 @@
 	<script>
 	Twitch.init({clientId: '5wf6b3t4dqr0rfbthgkqqlz79yy9rg'}, function(error, status) {
 	  if (error) {
-		// error encountered while loading
+		// error encountered while loading.
 		console.log(error);
 	  }
-	  // the sdk is now loaded
-	  if (status.authenticated) {
-		// user is currently logged in
-	  }
+	  // the sdk is now loaded.
 	  console.log('Twitch API Initialized');
 	});
+	
 	if (typeof jQuery != 'undefined') {  
 		// jQuery is loaded => print the version
 		console.log(jQuery.fn.jquery);
 	}		
 	
+	/* Similar to what you find in Java's format. */
+	/* Usage: chatsrc = 'http://twitch.tv/chat/embed?channel={channel}&amp;popout_chat=true'.format({ channel: streamer}); */
 	if (!String.prototype.format) {
 		String.prototype.format = function() {
 			var str = this.toString();
@@ -40,19 +40,19 @@
 		}
 	}	
 	
-	function loadSrlTeamChannels() { //Check for Memory Leaks
+	function loadSrlTeamChannels() { //Check for Memory Leaks. 06/02/2014 Memory leaks came from Adobe's flash. Use Chrome's pepper flash for stability.
 		//'http://api.speedrunslive.com/test/team' 		<--- LIVE DATA
 		//'srlJson.json' 								<--- TEST DATA
 		$.getJSON('http://api.speedrunslive.com/test/team',function(json){
 			srlTeamChannelTable(json);
 		});
-
 	}
 	
 	function srlTeamChannelTable(srlJson) { //Check for Memory Leaks
 
 		if (srlJson) {
 			try {
+				html = '';
 				for (var i = 0; i < 50; i++ ) { // Populates the streams from a json file from speedrunslive.com
 					list1 = '';
 					channel = srlJson.channels[i].channel;
@@ -64,13 +64,13 @@
 					
 					if (i%2) { 
 						list1 = '<li class=\'odd\' value={n}>'.format({n: i})
-						streamername = '<span style=\'font-size:140%; color:green;\'>' + channel.display_name + '</span>';
+						streamername = '<span style=\'font-size:140%; color:lightgreen; font-weight:bold;\'>' + channel.display_name + '</span>';
 					} else {
 						list1 = '<li class=\'even\' value={n}>'.format({n: i});
-						streamername = '<span style=\'font-size:140%; color:orange;\'>' + channel.display_name + '</span>';
+						streamername = '<span style=\'font-size:140%; color:green; font-weight:bold;\'>' + channel.display_name + '</span>';
 					}
 					
-					html = '{opentag}{img1}{name} {viewers} - {title} {endtag}'.format({
+					html += '{opentag}{img1}{name} {viewers} - {title} {endtag}'.format({
 						opentag: list1,
 						img1: image,					
 						name: streamername,
@@ -79,10 +79,12 @@
 						endtag: '</li>'
 						})
 
-					if (html != '') {
-						$('#streams ul').append(html).removeClass('hidden');
-					}
+
 				}
+				if (html != '') {
+					$('#streams ul').html(html);						
+				}
+
 			} catch(err) { 
 				console.log(err + ' (means there\'s no more streams to load)')
 			}
@@ -105,8 +107,8 @@
 				chatsrc = 'http://twitch.tv/chat/embed?channel={ch}&amp;popout_chat=true'.format({
 					ch: data[0]});
 					
-				//$('#chat_embed').prop('src', chatsrc);  // this Faster does not work in IE.
-				reloadChatBox(chatsrc);				// reinjects iframes. Slightly slower. Does not work in IE either.
+				//$('#chat_embed').prop('src', chatsrc); 	 // this Faster does not work in IE.
+				reloadChatBox(chatsrc);						 // reinjects iframes. Slightly slower. Does not work in IE either.
 				
 			});		
 		}
@@ -134,7 +136,7 @@
 		player.html(origin);
 	}
 	
-	function reloadChatBox(src) {
+	function reloadChatBox(src) { // Reinjects HTML with the twitch chat embed pointing to the stream.
 		res = calcResolutions();
 	
 		chatbox = $('#chatbox');
@@ -164,13 +166,13 @@
 		containerWidth = (currWinWidth);
 		containerHeight = (currWinHeight);
 		
-		leftPanelWidth = Math.floor(0.12 * currWinWidth);
+		leftPanelWidth = Math.floor(0.13 * currWinWidth);
 		leftPanelHeight = Math.floor(currWinHeight - hOffset);
 		
 		rightPanelWidth = Math.floor(0.18 * currWinWidth);
 		rightPanelHeight = Math.floor(currWinHeight - hOffset);
 		
-		centerPanelWidth = Math.floor(0.70 * currWinWidth);
+		centerPanelWidth = Math.floor(0.69 * currWinWidth);
 		centerPanelHeight = Math.floor(currWinHeight - hOffset);
 		
 		leftPlusCenterWidth = Math.floor(0.82 * currWinWidth);
@@ -252,14 +254,15 @@
 		
 		$('#chat_embed').css('width', res.rightW);
 		$('#chat_embed').css('height', res.rightH);
-		$('#showhide_right').css('margin-left', res.headerW-52); //Hack to align image to far right properly
-	
+		$('#showhide_right').css('margin-left', res.headerW-47); //Align image to far right properly.
+		//$('#copyright').css('margin-left', res.headerW-180); //Align to far right properly.	
 	}	
 
 	function showHideLeft() {
 		$('#left').toggle();
 		leftShow = !leftShow;
-		console.log(leftShow);
+		$('#showhide_left').toggleClass('flaticon-arrowheads3 flaticon-right39');
+		
 		if (!leftShow && rightShow) {
 			$('#center').css('width', res.leftCenterW);
 			$('#center').css('height', res.leftCenterH);			
@@ -287,6 +290,7 @@
 	function showHideRight() {
 		$('#right').toggle();
 		rightShow = !rightShow;
+		$('#showhide_right').toggleClass('flaticon-right39 flaticon-arrowheads3');		
 		
 		if (leftShow && !rightShow) {
 			$('#center').css('width', res.rightCenterW);
@@ -306,7 +310,7 @@
 			$('#videoplayer_embed').css('width', res.leftCenterW);
 			$('#videoplayer_embed').css('height', res.leftCenterH);				
 		} 
-		if ( leftShow && rightShow) {
+		if (leftShow && rightShow) {
 			applyResolutions();
 		}
 
@@ -327,7 +331,10 @@
 		$('#showhide_right').click(function(event) {
 			showHideRight();
 		});
-		
+	
+		$('#refresh_streams').click( function() { 	
+			loadSrlTeamChannels();		
+		});
 	});
 	
 	$( window ).resize(function() {
@@ -338,13 +345,17 @@
 
 	</head>
 	<body>
+
 		<div id='container'>
 
-			<div id='header' class='hidden'>
+			<div id='header' class='hidden '>
 				<!-- <div id='headerInfoDebug'></div> -->
-				<span style='position: relative; margin: 0px 0px 0px 0px;'><img id='showhide_left' width='26' height='26' src='img/small_left_right_arrow.png' alt='min'></span>
-				<span style='position: absolute; margin: 4px 0px 0px 30px; font-size: medium;'>&copy; 2014 Takumi Adachi</span>
-				<span style='position: absolute; ' ><img id='showhide_right' width='26' height='26' src='img/small_left_right_arrow.png' alt='min'></span>
+				<div id='showhide_left' class="glyph flaticon-arrowheads3"></div>
+				<span style='position: absolute;'><div id='showhide_right' class="glyph flaticon-right39"></div></span>
+				<span id='copyright' class='senlightfont' style='position: absolute; margin: 4px 0px 0px 30px; font-size: medium;'>&copy; 2014 takada</span>
+				<span id='refresh_streams' style='position: absolute; margin: 0px 0px 0px 207px;'><div class="glyph-icon flaticon-two123"></div></span>				
+				<!-- <img id='showhide_left' width='26' height='26' src='img/small_left_right_arrow.png' alt='min'></span> -->
+				<!-- <span style='position: absolute;'><img id='showhide_right' width='26' height='26' src='img/small_left_right_arrow.png' alt='min'></span> -->
 			</div>	
 		
 			<div id='left' class='panel hidden'>
