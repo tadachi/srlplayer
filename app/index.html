@@ -41,8 +41,8 @@
 	}	
 	
 	function loadSrlTeamChannels() { //Check for Memory Leaks. 06/02/2014 Memory leaks came from Adobe's flash. Use Chrome's pepper flash for stability.
-		//'http://api.speedrunslive.com/test/team' 		<--- LIVE DATA
-		//'srlJson.json' 								<--- TEST DATA
+		//'http://api.speedrunslive.com/test/team'	<--- LIVE DATA
+		//'srlJson.json'								<--- TEST DATA
 		$.getJSON('http://api.speedrunslive.com/test/team',function(json){
 			srlTeamChannelTable(json);
 		});
@@ -51,13 +51,13 @@
 	
 	function srlTeamChannelTable(srlJson) { //Check for Memory Leaks
 		var html = '';
-
+		var length = 0;
 		for (key in srlJson.channels) {
 			length++;
 		}
 		
-		for (i = 0; i < length; i++ ) { // Populates the streams from a json file from speedrunslive.com
-	
+		for (var i = 0; i < length; i++ ) { // Populates the streams from a json file from speedrunslive.com
+			console.log(srlJson.channels[i].channel);
 			channel = srlJson.channels[i].channel;
 			image = '<img width=60 height=60 align=\'left\' src=\' ' +
 				channel.image.size70 + '\' alt=min>';
@@ -81,7 +81,7 @@
 			endtag: '</li>'
 			});
 		}
-			
+		//console.log(html);
 		$('#streams ul').html(html);	
 					
 		//This allows fast switching of streams by changing the param in the videoplayer object,
@@ -104,7 +104,10 @@
 				
 			//$('#chat_embed').prop('src', chatsrc); 	 // this Faster does not work in IE.
 			reloadChatBox(chatsrc);						 // reinjects iframes. Slightly slower. Does not work in IE either.
-			
+		});
+
+		$('#refresh_streams').click( function() { 	
+			loadSrlTeamChannels();		
 		});
 	}
 	
@@ -327,9 +330,7 @@
 			showHideRight();
 		});
 	
-		$('#refresh_streams').click( function() { 	
-			loadSrlTeamChannels();		
-		});
+
 	});
 	
 	$( window ).resize(function() {
