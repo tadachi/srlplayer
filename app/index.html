@@ -46,72 +46,66 @@
 		$.getJSON('http://api.speedrunslive.com/test/team',function(json){
 			srlTeamChannelTable(json);
 		});
+
 	}
 	
 	function srlTeamChannelTable(srlJson) { //Check for Memory Leaks
+		var html = '';
 
-		if (srlJson) {
-			try {
-				html = '';
-				for (var i = 0; i < 50; i++ ) { // Populates the streams from a json file from speedrunslive.com
-					list1 = '';
-					channel = srlJson.channels[i].channel;
-					image = '<img width=60 height=60 align=\'left\' src=\' ' +
-						channel.image.size70 + '\' alt=min>';
-					list1 = '';
-					
-					currentviewers = '<span style=\'color: red;\'>' + channel.current_viewers + '</span>';
-					
-					if (i%2) { 
-						list1 = '<li class=\'odd\' value={n}>'.format({n: i})
-						streamername = '<span style=\'font-size:140%; color:lightgreen; font-weight:bold;\'>' + channel.display_name + '</span>';
-					} else {
-						list1 = '<li class=\'even\' value={n}>'.format({n: i});
-						streamername = '<span style=\'font-size:140%; color:green; font-weight:bold;\'>' + channel.display_name + '</span>';
-					}
-					
-					html += '{opentag}{img1}{name} {viewers} - {title} {endtag}'.format({
-						opentag: list1,
-						img1: image,					
-						name: streamername,
-						title: channel.title,
-						viewers: currentviewers,
-						endtag: '</li>'
-						})
+		for (key in srlJson.channels) {
+			length++;
+		}
+		
+		for (i = 0; i < length; i++ ) { // Populates the streams from a json file from speedrunslive.com
+	
+			channel = srlJson.channels[i].channel;
+			image = '<img width=60 height=60 align=\'left\' src=\' ' +
+				channel.image.size70 + '\' alt=min>';
+			
+			currentviewers = '<span style=\'color: red;\'>' + channel.current_viewers + '</span>';
 
-
-				}
-				if (html != '') {
-					$('#streams ul').html(html);						
-				}
-
-			} catch(err) { 
-				console.log(err + ' (means there\'s no more streams to load)')
+			if (i%2) { 
+				list1 = '<li class=\'odd\' value={n}>'.format({n: i})
+				streamername = '<span style=\'font-size:140%; color:lightgreen; font-weight:bold;\'>' + channel.display_name + '</span>';
+			} else {
+				list1 = '<li class=\'even\' value={n}>'.format({n: i});
+				streamername = '<span style=\'font-size:140%; color:green; font-weight:bold;\'>' + channel.display_name + '</span>';
 			}
 
-			//This allows fast switching of streams by changing the param in the videoplayer object,
-			$('#streams ul li').click( function() {
-				data = $(this).text().split(' '); // data[0] or first item is the channel name. the rest of array not needed.
-
-				// Create the channel string based on chosen stream.
-				flashvars = 'channel={CHANNEL}&auto_play=true'.format({
-					CHANNEL: data[0]});
-	
-				// Change the video channel via DOM			
-				$('#videoplayer_embed param[name=flashvars]').attr('value', flashvars );
-				
-				// Reinject the videoplayer with the new params pointing to the chosen stream.
-				reloadVideoPlayer(flashvars);
-				
-				// Change the chat to the corresponding video channel.
-				chatsrc = 'http://twitch.tv/chat/embed?channel={ch}&amp;popout_chat=true'.format({
-					ch: data[0]});
-					
-				//$('#chat_embed').prop('src', chatsrc); 	 // this Faster does not work in IE.
-				reloadChatBox(chatsrc);						 // reinjects iframes. Slightly slower. Does not work in IE either.
-				
-			});		
+			html +=  '{opentag}{img1}{name} {viewers} - {title} {endtag}'.format({
+			opentag: list1,
+			img1: image,					
+			name: streamername,
+			title: channel.title,
+			viewers: currentviewers,
+			endtag: '</li>'
+			});
 		}
+			
+		$('#streams ul').html(html);	
+					
+		//This allows fast switching of streams by changing the param in the videoplayer object,
+		$('#streams ul li').click( function() {
+			data = $(this).text().split(' '); // data[0] or first item is the channel name. the rest of array not needed.
+
+			// Create the channel string based on chosen stream.
+			flashvars = 'channel={CHANNEL}&auto_play=true'.format({
+				CHANNEL: data[0]});
+
+			// Change the video channel via DOM			
+			$('#videoplayer_embed param[name=flashvars]').attr('value', flashvars );
+			
+			// Reinject the videoplayer with the new params pointing to the chosen stream.
+			reloadVideoPlayer(flashvars);
+			
+			// Change the chat to the corresponding video channel.
+			chatsrc = 'http://twitch.tv/chat/embed?channel={ch}&amp;popout_chat=true'.format({
+				ch: data[0]});
+				
+			//$('#chat_embed').prop('src', chatsrc); 	 // this Faster does not work in IE.
+			reloadChatBox(chatsrc);						 // reinjects iframes. Slightly slower. Does not work in IE either.
+			
+		});
 	}
 	
 	function reloadVideoPlayer(streamer) {	// Reinjects HTML with the twitch embed pointing to the stream.
