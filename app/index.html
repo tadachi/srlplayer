@@ -52,12 +52,12 @@
 	function srlTeamChannelTable(srlJson) { //Check for Memory Leaks
 		var html = '';
 		var length = 0;
+		
 		for (key in srlJson.channels) {
 			length++;
 		}
 		
 		for (var i = 0; i < length; i++ ) { // Populates the streams from a json file from speedrunslive.com
-			console.log(srlJson.channels[i].channel);
 			channel = srlJson.channels[i].channel;
 			image = '<img width=60 height=60 align=\'left\' src=\' ' +
 				channel.image.size70 + '\' alt=min>';
