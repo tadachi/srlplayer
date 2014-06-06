@@ -16,13 +16,12 @@ app.use(methodOverride());
 app.listen(port);
 app.enable('trust proxy');
 
-<<<<<<< HEAD
 srl.use(express.static(__dirname + '/app/'));		//srl
 //home.use(express.static(__dirname)); 				//homepage
 
 //app.use(vhost('srl.tak.com', srl));
 app.use(vhost('www.takbytes.com', home));
-=======
+
 var home = require('express.io')();
 
 home.use('/js', express.static(__dirname + '/app/js'));
@@ -46,9 +45,5 @@ app.io.route('home', function (req) {
 /* Debug */
 console.log(__dirname);
 console.log(__dirname + '/app/');
-<<<<<<< HEAD
-console.log('Listening on port: ' + port);
-=======
 console.log('Listening on port: ' + port);
 
->>>>>>> Development
