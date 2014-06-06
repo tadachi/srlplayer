@@ -1,4 +1,3 @@
-/* get rid top and side white space bars using margin and height */
 html {
 overflow:hidden;
 overflow-x:hidden;
@@ -32,7 +31,7 @@ display:inline-block;
 font-size: medium;
 width:100%;
 height:26px;
-background-color:lightgreen;
+background-color:lightgray;
 }
 
 #left
@@ -58,7 +57,7 @@ font-size: medium;
 position:relative;
 width:100px;
 height:100px;
-background-color:grey;
+background-color:gray;
 
 display: inherit;
 }
@@ -69,7 +68,7 @@ font-size: medium;
 position:relative;
 width:100px;
 height:100px;
-background-color:blue;
+background-color:gray;
 
 overflow:hidden;
 overflow-x:hidden;
@@ -108,7 +107,7 @@ background-color:white;
 
 #left li.odd {
 color:white;
-background-color:grey;
+background-color:gray;
 }
 
 @font-face {
@@ -154,5 +153,3 @@ content: "\e001";
 .flaticon-two123:before {
 content: "\e002";
 }
-
-
