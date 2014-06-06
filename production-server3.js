@@ -28,7 +28,6 @@ home.use('/js', express.static(__dirname + '/app/js'));
 home.use('/css', express.static(__dirname + '/app/css'));
 home.use('/img', express.static(__dirname + '/app/img'));
 home.use('/test', express.static(__dirname + '/app/test'));
->>>>>>> Development
 
 app.use(vhost('srl.takbytes.com', home));
 
