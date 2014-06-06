@@ -9,7 +9,8 @@
 	<!-- <script src='js/jquery-2.0.3.min.js'></script> -->
 	<!-- <script src='js/jquery-2.1.0.min.js'></script> -->
 	<script src='js/jquery-2.1.1.min.js'></script>
-	<script src='js/twitch.min.js'></script>	
+	<script src='js/twitch.min.js'></script>
+	<script src="js/socket.io.js"></script>	
 	<script>
 	Twitch.init({clientId: '5wf6b3t4dqr0rfbthgkqqlz79yy9rg'}, function(error, status) {
 	  if (error) {
@@ -41,8 +42,13 @@
 	}	
 	
 	function loadSrlTeamChannels() { //Check for Memory Leaks. 06/02/2014 Memory leaks came from Adobe's flash. Use Chrome's pepper flash for stability.
+<<<<<<< HEAD
 		//'http://api.speedrunslive.com/test/team'	<--- LIVE DATA
 		//'srlJson.json'								<--- TEST DATA
+=======
+		//'http://api.speedrunslive.com/test/team' 		<--- LIVE DATA
+		//'test/srlJson.json' 								<--- TEST DATA
+>>>>>>> Development
 		$.getJSON('http://api.speedrunslive.com/test/team',function(json){
 			srlTeamChannelTable(json);
 		});
@@ -330,13 +336,20 @@
 			showHideRight();
 		});
 	
+<<<<<<< HEAD
 
+=======
+		$('#refresh_streams').click( function() { 	
+			loadSrlTeamChannels();				
+		});
+		
+>>>>>>> Development
 	});
 	
 	$( window ).resize(function() {
 		applyResolutions();
 	});
-
+	
 	</script>
 
 	</head>

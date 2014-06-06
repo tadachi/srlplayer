@@ -1,4 +1,3 @@
-/* get rid top and side white space bars using margin and height */
 html {
 overflow:hidden;
 overflow-x:hidden;
@@ -154,5 +153,3 @@ content: "\e001";
 .flaticon-two123:before {
 content: "\e002";
 }
-
-
