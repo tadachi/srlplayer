@@ -9,18 +9,10 @@ var vhost 			= require('vhost');
 var app 			= require('express.io')();
 app.http().io();
 
-//var io = io.connect();
-
 app.use(bodyParser());
 app.use(methodOverride());
 app.listen(port);
 app.enable('trust proxy');
-
-srl.use(express.static(__dirname + '/app/'));		//srl
-//home.use(express.static(__dirname)); 				//homepage
-
-//app.use(vhost('srl.tak.com', srl));
-app.use(vhost('www.takbytes.com', home));
 
 var home = require('express.io')();
 
@@ -45,4 +37,3 @@ app.io.route('home', function (req) {
 console.log(__dirname);
 console.log(__dirname + '/app/');
 console.log('Listening on port: ' + port);
-
