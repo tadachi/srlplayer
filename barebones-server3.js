@@ -16,15 +16,31 @@ app.enable('trust proxy');
 
 var home = require('express.io')();
 
+
 home.use('/js', express.static(__dirname + '/app/js'));
 home.use('/css', express.static(__dirname + '/app/css'));
 home.use('/img', express.static(__dirname + '/app/img'));
 home.use('/test', express.static(__dirname + '/app/test'));
 
+home.set('jsonp callback', true);
+/* Testing headers with new implementation of srlplayer
+home.use(function (req, res, next) {
+	// Website you wish to allow to connect
+	res.setHeader('Access-Control-Allow-Origin', '*');
+	
+	// Request methods you wish to allow
+	res.setHeader('Access-Control-Allow-Methods', 'GET');
+
+    // Pass to next layer of middleware
+    next();	
+});
+*/
 app.use(vhost('srl.tak.com', home));
 
 home.get('/', function(req, res) {
+
 	res.sendfile(__dirname + '/app/index.html');
+
 	req.io.route('home');
 })
 
