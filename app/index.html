@@ -11,15 +11,6 @@
     <script src='js/jquery-2.1.1.min.js'></script>
     <script src='js/twitch.min.js'></script>
     <script>
-    Twitch.init({clientId: '5wf6b3t4dqr0rfbthgkqqlz79yy9rg'}, function(error, status) {
-      if (error) {
-        // error encountered while loading.
-        console.log(error);
-      }
-      // the sdk is now loaded.
-      console.log('Twitch API Initialized');
-    });
-
     if (typeof jQuery != 'undefined') {
         // jQuery is loaded => print the version
         console.log(jQuery.fn.jquery);
