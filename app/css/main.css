@@ -49,7 +49,7 @@ overflow:scroll;
 overflow-x:hidden;
 
 display: inherit;
-}	
+}   
 
 #center
 {
@@ -127,7 +127,7 @@ url("flaticon.svg") format("svg");
 
 /* use this class to attach this font to any element i.e. <p class="fontsforweb_fontid_423">Text with this font applied</p> */
 .senlightfont {
-	font-family: 'SansationLight' !important;
+    font-family: 'SansationLight' !important;
 } /* Font downloaded from FontsForWeb.com */
 
 /* The following needs to be called before flaticon can be used. */
@@ -140,8 +140,8 @@ font-size: 23px;
 
 .glyph {
     display: inline-block;
-	position:relative;
-	text-align: left;
+    position:relative;
+    text-align: left;
 }
 
 .flaticon-arrowheads3:before {

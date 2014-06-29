@@ -1,409 +1,409 @@
 <!DOCTYPE html>
 <html lang='en'>
   <head>
-	<meta content='text/html; charset=utf-8' http-equiv='content-type'>
-	<title>srlplayer</title>
-	<link rel='stylesheet' href='css/main.css'>
-	<!--<link rel='stylesheet' href='debug.css'>-->
-	<!--<script src='js/debug.js'></script>-->
-	<!-- <script src='js/jquery-2.0.3.min.js'></script> -->
-	<!-- <script src='js/jquery-2.1.0.min.js'></script> -->
-	<script src='js/jquery-2.1.1.min.js'></script>
-	<script src='js/twitch.min.js'></script>
-	<script>
-	Twitch.init({clientId: '5wf6b3t4dqr0rfbthgkqqlz79yy9rg'}, function(error, status) {
-	  if (error) {
-		// error encountered while loading.
-		console.log(error);
-	  }
-	  // the sdk is now loaded.
-	  console.log('Twitch API Initialized');
-	});
+    <meta content='text/html; charset=utf-8' http-equiv='content-type'>
+    <title>srlplayer</title>
+    <meta name="description" content="Twitch stream viewer specifically for speedrunslive streamers <3. http://srl.takbytes.com">
+    <meta name='keywords' content='srlplayer takbytes.com SRL speedrunslive speedrunslive streamer speedrunslivestreamer srlstreamer srlplayer'>
+    <meta name='author' content='takada'>
+    <link rel='stylesheet' href='css/main.css'>
+    <!--<link rel='stylesheet' href='debug.css'>-->
+    <script src='js/jquery-2.1.1.min.js'></script>
+    <script src='js/twitch.min.js'></script>
+    <script>
+    Twitch.init({clientId: '5wf6b3t4dqr0rfbthgkqqlz79yy9rg'}, function(error, status) {
+      if (error) {
+        // error encountered while loading.
+        console.log(error);
+      }
+      // the sdk is now loaded.
+      console.log('Twitch API Initialized');
+    });
 
-	if (typeof jQuery != 'undefined') {
-		// jQuery is loaded => print the version
-		console.log(jQuery.fn.jquery);
-	}
+    if (typeof jQuery != 'undefined') {
+        // jQuery is loaded => print the version
+        console.log(jQuery.fn.jquery);
+    }
 
-	/* Similar to what you find in Java's format. */
-	/* Usage: chatsrc = 'http://twitch.tv/chat/embed?channel={channel}&amp;popout_chat=true'.format({ channel: streamer}); */
-	if (!String.prototype.format) {
-		String.prototype.format = function() {
-			var str = this.toString();
-			if (!arguments.length)
-				return str;
-			var args = typeof arguments[0],
-				args = (('string' == args || 'number' == args) ? arguments : arguments[0]);
-			for (arg in args)
-				str = str.replace(RegExp('\\{' + arg + '\\}', 'gi'), args[arg]);
-			return str;
-		}
-	}
+    /* Similar to what you find in Java's format. */
+    /* Usage: chatsrc = 'http://twitch.tv/chat/embed?channel={channel}&amp;popout_chat=true'.format({ channel: streamer}); */
+    if (!String.prototype.format) {
+        String.prototype.format = function() {
+            var str = this.toString();
+            if (!arguments.length)
+                return str;
+            var args = typeof arguments[0],
+                args = (('string' == args || 'number' == args) ? arguments : arguments[0]);
+            for (arg in args)
+                str = str.replace(RegExp('\\{' + arg + '\\}', 'gi'), args[arg]);
+            return str;
+        }
+    }
 
-	function loadSrlTeamChannels() { //Check for Memory Leaks. 06/02/2014 Memory leaks came from Adobe's flash. Use Chrome's pepper flash for stability.
-		//'http://api.speedrunslive.com/test/team' 		<--- LIVE DATA
-		//'test/srlJson.json' 								<--- TEST DATA
-		/*
-		 * This uses JSON. Note: this method does not work anymore
-		 /
-		$.getJSON('http://api.speedrunslive.com/test/teamcallback=?',function(json){
-			console.log(json);
-			srlTeamChannelTable(json);
-		});
-		*/
-		//JSONP
-		$.ajax({ 
-			url: "http://api.speedrunslive.com/test/team",
+    function loadSrlTeamChannels() { //Check for Memory Leaks. 06/02/2014 Memory leaks came from Adobe's flash. Use Chrome's pepper flash for stability.
 
-			// the name of the callback parameter, as specified by the YQL service
-			jsonp: "callback",
+        /*
+         * This uses JSON. Note: this method does not work anymore
+         /
+        $.getJSON('http://api.speedrunslive.com/test/teamcallback=?',function(json){
+            console.log(json);
+            srlTeamChannelTable(json);
+        });
+        */
+        //'http://api.speedrunslive.com/test/team'      <--- LIVE DATA
+        //'test/srlJson.json'                           <--- TEST DATA
+        //JSONP
+        $.ajax({
+            url: "http://api.speedrunslive.com/test/team",
 
-			// tell jQuery we're expecting JSONP
-			dataType: "jsonp",
+            // the name of the callback parameter, as specified by the YQL service
+            jsonp: "callback",
 
-			// work with the response
-			success: function( response ) {
-				console.log( response ); // server response
-				srlTeamChannelTable(response);
-			}			
-		});
-	}
+            // tell jQuery we're expecting JSONP
+            dataType: "jsonp",
 
-	function srlTeamChannelTable(srlJson) { //Check for Memory Leaks
-		var html = '';
-		var length = 0;
+            // work with the response
+            success: function( response ) {
+                console.log( response ); // server response
+                srlTeamChannelTable(response);
+            }
+        });
+    }
 
-		for (key in srlJson.channels) {
-			length++;
-		}
+    function srlTeamChannelTable(srlJson) {
+        var html = '';
+        var length = 0;
 
-		for (var i = 0; i < length; i++ ) { // Populates the streams from a json file from speedrunslive.com
-			channel = srlJson.channels[i].channel;
-			image = '<img width=60 height=60 align=\'left\' src=\' ' +
-				channel.image.size70 + '\' alt=min>';
+        for (key in srlJson.channels) {
+            length++;
+        }
 
-			currentviewers = '<span style=\'color: red;\'>' + channel.current_viewers + '</span>';
+        for (var i = 0; i < length; i++ ) { // Populates the streams from a json file from speedrunslive.com
+            channel = srlJson.channels[i].channel;
+            image = '<img width=60 height=60 align=\'left\' src=\' ' +
+                channel.image.size70 + '\' alt=min>';
 
-			if (i%2) {
-				list1 = '<li class=\'odd\' value={n}>'.format({n: i})
-				streamername = '<span style=\'font-size:140%; color:lightgreen; font-weight:bold;\'>' + channel.display_name + '</span>';
-			} else {
-				list1 = '<li class=\'even\' value={n}>'.format({n: i});
-				streamername = '<span style=\'font-size:140%; color:green; font-weight:bold;\'>' + channel.display_name + '</span>';
-			}
+            currentviewers = '<span style=\'color: red;\'>' + channel.current_viewers + '</span>';
 
-			html +=  '{opentag}{img1}{name} {viewers} - {title} {endtag}'.format({
-			opentag: list1,
-			img1: image,
-			name: streamername,
-			title: channel.title,
-			viewers: currentviewers,
-			endtag: '</li>'
-			});
-		}
-		//console.log(html);
-		$('#streams ul').html(html);
+            if (i%2) {
+                list1 = '<li class=\'odd\' value={n}>'.format({n: i})
+                streamername = '<span style=\'font-size:140%; color:lightgreen; font-weight:bold;\'>' + channel.display_name + '</span>';
+            } else {
+                list1 = '<li class=\'even\' value={n}>'.format({n: i});
+                streamername = '<span style=\'font-size:140%; color:green; font-weight:bold;\'>' + channel.display_name + '</span>';
+            }
 
-		//This allows fast switching of streams by changing the param in the videoplayer object,
-		$('#streams ul li').click( function() {
-			data = $(this).text().split(' '); // data[0] or first item is the channel name. the rest of array not needed.
+            html +=  '{opentag}{img1}{name} {viewers} - {title} {endtag}'.format({
+            opentag: list1,
+            img1: image,
+            name: streamername,
+            title: channel.title,
+            viewers: currentviewers,
+            endtag: '</li>'
+            });
+        }
+        //console.log(html);
+        $('#streams ul').html(html);
 
-			// Create the channel string based on chosen stream.
-			flashvars = 'channel={CHANNEL}&auto_play=true'.format({
-				CHANNEL: data[0]});
+        //This allows fast switching of streams by changing the param in the videoplayer object,
+        $('#streams ul li').click( function() {
+            data = $(this).text().split(' '); // data[0] or first item is the channel name. the rest of array not needed.
 
-			// Change the video channel via DOM
-			$('#videoplayer_embed param[name=flashvars]').attr('value', flashvars );
+            // Create the channel string based on chosen stream.
+            flashvars = 'channel={CHANNEL}&auto_play=true'.format({
+                CHANNEL: data[0]});
 
-			// Reinject the videoplayer with the new params pointing to the chosen stream.
-			reloadVideoPlayer(flashvars);
+            // Change the video channel via DOM
+            $('#videoplayer_embed param[name=flashvars]').attr('value', flashvars );
 
-			// Change the chat to the corresponding video channel.
-			chatsrc = 'http://twitch.tv/chat/embed?channel={ch}&amp;popout_chat=true'.format({
-				ch: data[0]});
+            // Reinject the videoplayer with the new params pointing to the chosen stream.
+            reloadVideoPlayer(flashvars);
 
-			//$('#chat_embed').prop('src', chatsrc); 	 // this Faster does not work in IE.
-			reloadChatBox(chatsrc);						 // reinjects iframes. Slightly slower. Does not work in IE either.
-		});
+            // Change the chat to the corresponding video channel.
+            chatsrc = 'http://twitch.tv/chat/embed?channel={ch}&amp;popout_chat=true'.format({
+                ch: data[0]});
 
-		$('#refresh_streams').click( function() {
-			loadSrlTeamChannels();
-		});
-	}
+            //$('#chat_embed').prop('src', chatsrc);     // this is Faster does not work in IE.
+            reloadChatBox(chatsrc);                      // reinjects iframes. Slightly slower. Does not work in IE either.
+        });
+    }
 
-	function reloadVideoPlayer(streamer) {	// Reinjects HTML with the twitch embed pointing to the stream.
-		res = calcResolutions();
+    /* Reinjects HTML with the twitch embed pointing to the stream. */
+    function reloadVideoPlayer(streamer) {
+        res = calcResolutions();
 
-		player = $('#videoplayer');
+        player = $('#videoplayer');
 
-		origin = 	["<object bgcolor='#000000'",
-						"data='http://www.twitch.tv/widgets/archive_embed_player.swf'",
-						"id='videoplayer_embed'",
-						"type='application/x-shockwave-flash'",
-						"width='{w}'".format({w: res.centerW}),
-						"height='{h}'>".format({h: res.centerH}),
-						"<param name='movie' value='http://www.twitch.tv/widgets/archive_embed_player.swf' />",
-						"<param name='allowScriptAccess' value='always' />",
-						"<param name='allowNetworking' value='all' />",
-						"<param name='allowFullScreen' value='true' />",
-						"<param name='flashvars' value='{flashvars}'/>".format({flashvars: streamer}),
-					"</object>"
-					].join('');
-		console.log(origin);
-		player.html(origin);
-	}
+        origin =    ["<object bgcolor='#000000'",
+                        "data='http://www.twitch.tv/widgets/archive_embed_player.swf'",
+                        "id='videoplayer_embed'",
+                        "type='application/x-shockwave-flash'",
+                        "width='{w}'".format({w: res.centerW}),
+                        "height='{h}'>".format({h: res.centerH}),
+                        "<param name='movie' value='http://www.twitch.tv/widgets/archive_embed_player.swf' />",
+                        "<param name='allowScriptAccess' value='always' />",
+                        "<param name='allowNetworking' value='all' />",
+                        "<param name='allowFullScreen' value='true' />",
+                        "<param name='flashvars' value='{flashvars}'/>".format({flashvars: streamer}),
+                    "</object>"
+                    ].join('');
+        console.log(origin);
+        player.html(origin);
+    }
 
-	function reloadChatBox(src) { // Reinjects HTML with the twitch chat embed pointing to the stream.
-		res = calcResolutions();
+    /* Reinjects HTML with the twitch chat embed pointing to the stream. */
+    function reloadChatBox(src) {
+        res = calcResolutions();
 
-		chatbox = $('#chatbox');
-		origin = 	['<iframe ',
-						'id=\'chat_embed\' ',
-						'frameborder=\'0\' ',
-						'scrolling=\'yes\' ',
-						'src=\'{url}\' '.format({url: src}),
-						'width=\'{w}\' '.format({w: res.rightW}),
-						'height=\'{h}\'>'.format({h: res.rightH}),
-					'</iframe>'].join('');
+        chatbox = $('#chatbox');
+        origin =    ['<iframe ',
+                        'id=\'chat_embed\' ',
+                        'frameborder=\'0\' ',
+                        'scrolling=\'yes\' ',
+                        'src=\'{url}\' '.format({url: src}),
+                        'width=\'{w}\' '.format({w: res.rightW}),
+                        'height=\'{h}\'>'.format({h: res.rightH}),
+                    '</iframe>'].join('');
 
-		chatbox.html(origin);
-	}
+        chatbox.html(origin);
+    }
 
-	/*
-	* Creates and returns an object that has resolutions for 3 panels. left, center and right.
-	*/
-	function calcResolutions() {
-		hOffset = 26; //Height for our header
-		currWinWidth = $(window).width();
-		currWinHeight = $(window).height();
+    /*
+    * Creates and returns an object that has resolutions for 3 panels. left, center and right.
+    */
+    function calcResolutions() {
+        hOffset = 26; //Height for our header
+        currWinWidth = $(window).width();
+        currWinHeight = $(window).height();
 
-		headerPanelWidth = Math.floor(currWinWidth);
-		headerPanelHeight = Math.floor(hOffset);
+        headerPanelWidth = Math.floor(currWinWidth);
+        headerPanelHeight = Math.floor(hOffset);
 
-		containerWidth = (currWinWidth);
-		containerHeight = (currWinHeight);
+        containerWidth = (currWinWidth);
+        containerHeight = (currWinHeight);
 
-		leftPanelWidth = Math.floor(0.13 * currWinWidth);
-		leftPanelHeight = Math.floor(currWinHeight - hOffset);
+        leftPanelWidth = Math.floor(0.13 * currWinWidth);
+        leftPanelHeight = Math.floor(currWinHeight - hOffset);
 
-		rightPanelWidth = Math.floor(0.18 * currWinWidth);
-		rightPanelHeight = Math.floor(currWinHeight - hOffset);
+        rightPanelWidth = Math.floor(0.18 * currWinWidth);
+        rightPanelHeight = Math.floor(currWinHeight - hOffset);
 
-		centerPanelWidth = Math.floor(0.69 * currWinWidth);
-		centerPanelHeight = Math.floor(currWinHeight - hOffset);
+        centerPanelWidth = Math.floor(0.69 * currWinWidth);
+        centerPanelHeight = Math.floor(currWinHeight - hOffset);
 
-		leftPlusCenterWidth = Math.floor(0.82 * currWinWidth);
-		leftPlusCenterHeight = Math.floor(currWinHeight - hOffset);
-		rightPlusCenterWidth = Math.ceil(0.87 * currWinWidth);
-		rightPlusCenterHeight = Math.floor(currWinHeight - hOffset);
-		centerOnlyWidth = Math.floor(currWinWidth);
-		centerOnlyHeight = Math.floor(currWinHeight - hOffset);
+        leftPlusCenterWidth = Math.floor(0.82 * currWinWidth);
+        leftPlusCenterHeight = Math.floor(currWinHeight - hOffset);
+        rightPlusCenterWidth = Math.ceil(0.87 * currWinWidth);
+        rightPlusCenterHeight = Math.floor(currWinHeight - hOffset);
+        centerOnlyWidth = Math.floor(currWinWidth);
+        centerOnlyHeight = Math.floor(currWinHeight - hOffset);
 
-		<!-- Debug -->
-<!-- 		console.log('left: ' + leftPanelWidth + 'x' + leftPanelHeight); -->
-<!-- 		console.log('right: ' + rightPanelWidth + 'x' + rightPanelHeight); -->
-<!-- 		console.log('center: ' + centerPanelWidth + 'x' + centerPanelHeight); -->
-<!-- 		console.log('leftCenter: ' + leftPlusCenterWidth + 'x' + leftPlusCenterHeight); -->
-<!-- 		console.log('rightCenter: ' + rightPlusCenterWidth + 'x' + rightPlusCenterHeight); -->
-<!-- 		console.log('centerOnly: ' + centerOnlyWidth + 'x' + centerOnlyHeight); -->
-		<!-- End Debug -- >
+        //Debug
+        // console.log('left: ' + leftPanelWidth + 'x' + leftPanelHeight);
+        // console.log('right: ' + rightPanelWidth + 'x' + rightPanelHeight);
+        // console.log('center: ' + centerPanelWidth + 'x' + centerPanelHeight);
+        // console.log('leftCenter: ' + leftPlusCenterWidth + 'x' + leftPlusCenterHeight);
+        // console.log('rightCenter: ' + rightPlusCenterWidth + 'x' + rightPlusCenterHeight);
+        // console.log('centerOnly: ' + centerOnlyWidth + 'x' + centerOnlyHeight);
 
-		return {
-				containerW: containerWidth, containerH: containerHeight,
-				headerW: headerPanelWidth, headerH: headerPanelHeight,
-				leftW: leftPanelWidth, leftH: leftPanelHeight,
-				rightW: rightPanelWidth, rightH: rightPanelHeight,
-				centerW: centerPanelWidth, centerH: centerPanelHeight,
-				leftCenterW: leftPlusCenterWidth, leftCenterH: leftPlusCenterHeight,
-				rightCenterW: rightPlusCenterWidth, rightCenterH: rightPlusCenterHeight,
-				centerOnlyW: centerOnlyWidth, centerOnlyH: centerOnlyHeight
-				};
 
-	}
+        return {
+                containerW: containerWidth, containerH: containerHeight,
+                headerW: headerPanelWidth, headerH: headerPanelHeight,
+                leftW: leftPanelWidth, leftH: leftPanelHeight,
+                rightW: rightPanelWidth, rightH: rightPanelHeight,
+                centerW: centerPanelWidth, centerH: centerPanelHeight,
+                leftCenterW: leftPlusCenterWidth, leftCenterH: leftPlusCenterHeight,
+                rightCenterW: rightPlusCenterWidth, rightCenterH: rightPlusCenterHeight,
+                centerOnlyW: centerOnlyWidth, centerOnlyH: centerOnlyHeight
+                };
 
-	// Apply panel resolutions based on current window sizes to various divs
-	function applyResolutions() {
-		res = calcResolutions();
+    }
 
-		$('#container').css('width', res.containerW);
-		$('#container').css('height', res.containerH);
+    // Apply panel resolutions based on current window sizes to various divs
+    function applyResolutions() {
+        res = calcResolutions();
 
-		$('#header').css('width',res.headerW);
-		$('#header').css('height',res.headerH);
+        $('#container').css('width', res.containerW);
+        $('#container').css('height', res.containerH);
 
-		$('#left ul').css('width', res.leftW);
-		$('#left ul li').css('width', res.leftW);
+        $('#header').css('width',res.headerW);
+        $('#header').css('height',res.headerH);
 
-		if (leftShow) {
-			$('#left').css('width', res.leftW);
-			$('#left').css('height', res.leftH);
-		}
-		if (rightShow) {
-			$('#right').css('width', res.rightW);
-			$('#right').css('height', res.rightH);
-		}
-		if (!leftShow && rightShow) {
-			$('#center').css('width', res.leftCenterW);
-			$('#center').css('height', res.leftCenterH);
-			$('#videoplayer_embed').css('width', res.leftCenterW);
-			$('#videoplayer_embed').css('height', res.leftCenterH);
-		}else if (leftShow && !rightShow) {
-			$('#center').css('width', res.rightCenterW);
-			$('#center').css('height', res.rightCenterH);
-			$('#videoplayer_embed').css('width', res.rightCenterW);
-			$('#videoplayer_embed').css('height', res.rightCenterH);
-		}else if ( (!leftShow && !rightShow) ) {
-			$('#center').css('width', res.centerOnlyW);
-			$('#center').css('height', res.centerOnlyH);
-			$('#videoplayer_embed').css('width', res.centerOnlyW);
-			$('#videoplayer_embed').css('height', res.centerOnlyH);
-		}else if (leftShow && !rightShow) {
-			$('#center').css('width', res.rightCenterW);
-			$('#center').css('height', res.rightCenterH);
-			$('#videoplayer_embed').css('width', res.rightCenterW);
-			$('#videoplayer_embed').css('height', res.rightCenterH);
-		}else {
-			$('#center').css('width', res.centerW);
-			$('#center').css('height', res.centerH);
-			$('#videoplayer_embed').css('width', res.centerW);
-			$('#videoplayer_embed').css('height', res.centerH);
-		}
+        $('#left ul').css('width', res.leftW);
+        $('#left ul li').css('width', res.leftW);
 
-		$('#chat_embed').css('width', res.rightW);
-		$('#chat_embed').css('height', res.rightH);
-		$('#showhide_right').css('margin-left', res.headerW-47); //Align image to far right properly.
-		$('#refresh_streams').css('margin-left', res.leftW-42);
-		$('#copyright').css('margin-left', res.headerW-180); //Align to far right properly.
-	}
+        if (leftShow) {
+            $('#left').css('width', res.leftW);
+            $('#left').css('height', res.leftH);
+        }
+        if (rightShow) {
+            $('#right').css('width', res.rightW);
+            $('#right').css('height', res.rightH);
+        }
+        if (!leftShow && rightShow) {
+            $('#center').css('width', res.leftCenterW);
+            $('#center').css('height', res.leftCenterH);
+            $('#videoplayer_embed').css('width', res.leftCenterW);
+            $('#videoplayer_embed').css('height', res.leftCenterH);
+        }else if (leftShow && !rightShow) {
+            $('#center').css('width', res.rightCenterW);
+            $('#center').css('height', res.rightCenterH);
+            $('#videoplayer_embed').css('width', res.rightCenterW);
+            $('#videoplayer_embed').css('height', res.rightCenterH);
+        }else if ( (!leftShow && !rightShow) ) {
+            $('#center').css('width', res.centerOnlyW);
+            $('#center').css('height', res.centerOnlyH);
+            $('#videoplayer_embed').css('width', res.centerOnlyW);
+            $('#videoplayer_embed').css('height', res.centerOnlyH);
+        }else if (leftShow && !rightShow) {
+            $('#center').css('width', res.rightCenterW);
+            $('#center').css('height', res.rightCenterH);
+            $('#videoplayer_embed').css('width', res.rightCenterW);
+            $('#videoplayer_embed').css('height', res.rightCenterH);
+        }else {
+            $('#center').css('width', res.centerW);
+            $('#center').css('height', res.centerH);
+            $('#videoplayer_embed').css('width', res.centerW);
+            $('#videoplayer_embed').css('height', res.centerH);
+        }
 
-	function showHideLeft() {
-		$('#left').toggle();
-		leftShow = !leftShow;
-		$('#showhide_left').toggleClass('flaticon-arrowheads3 flaticon-right39');
+        $('#chat_embed').css('width', res.rightW);
+        $('#chat_embed').css('height', res.rightH);
+        $('#showhide_right').css('margin-left', res.headerW-47); //Align image to far right properly.
+        $('#refresh_streams').css('margin-left', res.leftW-42);
+        $('#copyright').css('margin-left', res.headerW-180); //Align to far right properly.
+    }
 
-		if (!leftShow && rightShow) {
-			$('#center').css('width', res.leftCenterW);
-			$('#center').css('height', res.leftCenterH);
-			$('#videoplayer_embed').css('width', res.leftCenterW);
-			$('#videoplayer_embed').css('height', res.leftCenterH);
-		}
-		if ( (!leftShow && !rightShow) ) {
-			$('#center').css('width', res.centerOnlyW);
-			$('#center').css('height', res.centerOnlyH);
-			$('#videoplayer_embed').css('width', res.centerOnlyW);
-			$('#videoplayer_embed').css('height', res.centerOnlyH);
-		}
-		if (leftShow && !rightShow) {
-			$('#center').css('width', res.rightCenterW);
-			$('#center').css('height', res.rightCenterH);
-			$('#videoplayer_embed').css('width', res.rightCenterW);
-			$('#videoplayer_embed').css('height', res.rightCenterH);
-		}
-		if ( leftShow && rightShow) {
-			applyResolutions();
-		}
+    function showHideLeft() {
+        $('#left').toggle(); // Toggle show/hide
+        leftShow = !leftShow; // Toggle the boolean.
+        $('#showhide_left').toggleClass('flaticon-arrowheads3 flaticon-right39'); //Toggle where the icon points to.
 
-	}
+        if (!leftShow && rightShow) { //Left is hidden so expand the videoplayer.
+            $('#center').css('width', res.leftCenterW);
+            $('#center').css('height', res.leftCenterH);
+            $('#videoplayer_embed').css('width', res.leftCenterW);
+            $('#videoplayer_embed').css('height', res.leftCenterH);
+        }
+        if ( (!leftShow && !rightShow) ) { //Both left and right are hidden so maximize videoplayer.
+            $('#center').css('width', res.centerOnlyW);
+            $('#center').css('height', res.centerOnlyH);
+            $('#videoplayer_embed').css('width', res.centerOnlyW);
+            $('#videoplayer_embed').css('height', res.centerOnlyH);
+        }
+        if (leftShow && !rightShow) { //Right is hidden so expand the videoplayer.
+            $('#center').css('width', res.rightCenterW);
+            $('#center').css('height', res.rightCenterH);
+            $('#videoplayer_embed').css('width', res.rightCenterW);
+            $('#videoplayer_embed').css('height', res.rightCenterH);
+        }
+        if ( leftShow && rightShow) {
+            applyResolutions();
+        }
 
-	function showHideRight() {
-		$('#right').toggle();
-		rightShow = !rightShow;
-		$('#showhide_right').toggleClass('flaticon-right39 flaticon-arrowheads3');
+    }
 
-		if (leftShow && !rightShow) {
-			$('#center').css('width', res.rightCenterW);
-			$('#center').css('height', res.rightCenterH);
-			$('#videoplayer_embed').css('width', res.rightCenterW);
-			$('#videoplayer_embed').css('height', res.rightCenterH);
-		}
-		if ( (!leftShow && !rightShow) ) {
-			$('#center').css('width', res.centerOnlyW);
-			$('#center').css('height', res.centerOnlyH);
-			$('#videoplayer_embed').css('width', res.centerOnlyW);
-			$('#videoplayer_embed').css('height', res.centerOnlyH);
-		}
-		if (!leftShow && rightShow) {
-			$('#center').css('width', res.leftCenterW);
-			$('#center').css('height', res.leftCenterH);
-			$('#videoplayer_embed').css('width', res.leftCenterW);
-			$('#videoplayer_embed').css('height', res.leftCenterH);
-		}
-		if (leftShow && rightShow) {
-			applyResolutions();
-		}
+    function showHideRight() {
+        $('#right').toggle();
+        rightShow = !rightShow;
+        $('#showhide_right').toggleClass('flaticon-right39 flaticon-arrowheads3');
 
-	}
+        if (leftShow && !rightShow) { //Right is hidden so expand the videoplayer.
+            $('#center').css('width', res.rightCenterW);
+            $('#center').css('height', res.rightCenterH);
+            $('#videoplayer_embed').css('width', res.rightCenterW);
+            $('#videoplayer_embed').css('height', res.rightCenterH);
+        }
+        if ( (!leftShow && !rightShow) ) { //Both left and right are hidden so maximize videoplayer.
+            $('#center').css('width', res.centerOnlyW);
+            $('#center').css('height', res.centerOnlyH);
+            $('#videoplayer_embed').css('width', res.centerOnlyW);
+            $('#videoplayer_embed').css('height', res.centerOnlyH);
+        }
+        if (!leftShow && rightShow) { //Left is hidden so expand the videoplayer.
+            $('#center').css('width', res.leftCenterW);
+            $('#center').css('height', res.leftCenterH);
+            $('#videoplayer_embed').css('width', res.leftCenterW);
+            $('#videoplayer_embed').css('height', res.leftCenterH);
+        }
+        if (leftShow && rightShow) {
+            applyResolutions();
+        }
 
-	var leftShow = true;
-	var rightShow = true;
+    }
 
-	$( document ).ready(function() {
-		loadSrlTeamChannels();
+    var leftShow = true;
+    var rightShow = true;
 
-		applyResolutions();	// Apply panel resolutions based on current window sizes
+    /* Main */
+    $( document ).ready(function() {
+        loadSrlTeamChannels();
 
-		$('#showhide_left').click(function(event) {
-			showHideLeft();
-		});
+        applyResolutions(); // Apply panel resolutions based on current window sizes
 
-		$('#showhide_right').click(function(event) {
-			showHideRight();
-		});
+        $('#showhide_left').click(function(event) {
+            showHideLeft();
+        });
 
-		$('#refresh_streams').click( function() {
-			loadSrlTeamChannels();
-		});
-	});
+        $('#showhide_right').click(function(event) {
+            showHideRight();
+        });
 
-	$( window ).resize(function() {
-		applyResolutions();
-	});
+        $('#refresh_streams').click(function() {
+            loadSrlTeamChannels();
+        });
+    });
 
-	</script>
+    $( window ).resize(function() {
+        applyResolutions();
+    });
 
-	</head>
-	<body>
+    </script>
 
-		<div id='container'>
+    </head>
+    <body>
 
-			<div id='header' class='hidden '>
-				<!-- <div id='headerInfoDebug'></div> -->
-				<div id='showhide_left' class="glyph flaticon-arrowheads3"></div>
-				<span style='position: absolute;'><div id='showhide_right' class="glyph flaticon-right39"></div></span>
-				<span id='copyright' class='senlightfont' style='position: absolute; margin: 4px 0px 0px 0px; font-size: medium;'>&copy; 2014 takada</span>
-				<span id='refresh_streams' style='position: absolute;'><div class="glyph-icon flaticon-two123"></div></span>
-				<!-- <img id='showhide_left' width='26' height='26' src='img/small_left_right_arrow.png' alt='min'></span> -->
-				<!-- <span style='position: absolute;'><img id='showhide_right' width='26' height='26' src='img/small_left_right_arrow.png' alt='min'></span> -->
-			</div>
+        <div id='container'>
 
-			<div id='left' class='panel hidden'>
-<!--				<div id='leftInfoDebug'></div> -->
-				<div id='streams'>
-					<ul></ul>
-				</div>
-			</div>
+            <div id='header' class='hidden '>
+                <!-- <div id='headerInfoDebug'></div> -->
+                <div id='showhide_left' class="glyph flaticon-arrowheads3"></div>
+                <span style='position: absolute;'><div id='showhide_right' class="glyph flaticon-right39"></div></span>
+                <span id='copyright' class='senlightfont' style='position: absolute; margin: 4px 0px 0px 0px; font-size: medium;'>&copy; 2014 takada</span>
+                <span id='refresh_streams' style='position: absolute;'><div class="glyph-icon flaticon-two123"></div></span>
+                <!-- <img id='showhide_left' width='26' height='26' src='img/small_left_right_arrow.png' alt='min'></span> -->
+                <!-- <span style='position: absolute;'><img id='showhide_right' width='26' height='26' src='img/small_left_right_arrow.png' alt='min'></span> -->
+            </div>
 
-			<div id='center'>
-<!-- 			<div id='centerInfoDebug'></div> -->
-				<div id='videoplayer'>
-				</div>
-			</div>
+            <div id='left' class='panel hidden'>
+<!--                <div id='leftInfoDebug'></div> -->
+                <div id='streams'>
+                    <ul></ul>
+                </div>
+            </div>
 
-			<div id='right' class='panel hidden'>
-				<!-- <div id='rightInfoDebug'></div> -->
-				<div id='chatbox'>
-				<!-- Uncomment this iframe if you intend to debug chat -->
-<!-- 					<iframe id='chat_embed'
-							frameborder='0'
-							scrolling='yes'
-							src=''
-							width='350'
-							height='500'>
-					</iframe> -->
-				</div>
-			</div>
+            <div id='center'>
+<!--            <div id='centerInfoDebug'></div> -->
+                <div id='videoplayer'>
+                </div>
+            </div>
 
-		</div>
+            <div id='right' class='panel hidden'>
+                <!-- <div id='rightInfoDebug'></div> -->
+                <div id='chatbox'>
+                <!-- Uncomment this iframe if you intend to debug chat -->
+<!--                    <iframe id='chat_embed'
+                            frameborder='0'
+                            scrolling='yes'
+                            src=''
+                            width='350'
+                            height='500'>
+                    </iframe> -->
+                </div>
+            </div>
 
-	</body>
+        </div>
+
+    </body>
 </html>
