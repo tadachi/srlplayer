@@ -9,7 +9,7 @@ font-size: 0;
 margin: 0;
 overflow:hidden;
 overflow-x:hidden;
-overflow-y:hidden; 
+overflow-y:hidden;
 }
 
 #container
@@ -49,7 +49,7 @@ overflow:scroll;
 overflow-x:hidden;
 
 display: inherit;
-}   
+}
 
 #center
 {
@@ -110,6 +110,11 @@ color:white;
 background-color:gray;
 }
 
+/*
+ * Custom Fonts
+ * The following should not be editted.
+ */
+
 @font-face {
 font-family: 'SansationLight';
 src: url('./SansationLight.eot');
@@ -132,8 +137,8 @@ url("flaticon.svg") format("svg");
 
 /* The following needs to be called before flaticon can be used. */
 [class^="flaticon-"]:before, [class*=" flaticon-"]:before,
-[class^="flaticon-"]:after, [class*=" flaticon-"]:after 
-{   
+[class^="flaticon-"]:after, [class*=" flaticon-"]:after
+{
 font-family: Flaticon;
 font-size: 23px;
 }

@@ -9,7 +9,12 @@ var vhost           = require('vhost');
 var app             = require('express.io')();
 app.http().io();
 
-app.use(bodyParser());
+// parse application/x-www-form-urlencoded
+app.use(bodyParser.urlencoded());
+
+// parse application/json
+app.use(bodyParser.json());
+
 app.use(methodOverride());
 app.listen(port);
 app.enable('trust proxy');

@@ -34,7 +34,7 @@
     function loadSrlTeamChannels() { //Check for Memory Leaks. 06/02/2014 Memory leaks came from Adobe's flash. Use Chrome's pepper flash for stability.
 
         /*
-         * This uses JSON. Note: this method does not work anymore
+         * This uses JSON. Note: this method does not work anymore.
          /
         $.getJSON('http://api.speedrunslive.com/test/teamcallback=?',function(json){
             console.log(json);
@@ -70,13 +70,15 @@
         }
 
         for (var i = 0; i < length; i++ ) { // Populates the streams from a json file from speedrunslive.com
-            channel = srlJson.channels[i].channel;
-            image = '<img width=60 height=60 align=\'left\' src=\' ' +
+
+            channel = srlJson.channels[i].channel; // streamer's channel unique name.
+
+            image = '<img width=60 height=60 align=\'left\' src=\' ' + // Streamer's logo
                 channel.image.size70 + '\' alt=min>';
 
-            currentviewers = '<span style=\'color: red;\'>' + channel.current_viewers + '</span>';
+            currentviewers = '<span style=\'color: red;\'>' + channel.current_viewers + '</span>'; // Number of viewers.
 
-            if (i%2) {
+            if (i%2) { //Make even and uneven different colors
                 list1 = '<li class=\'odd\' value={n}>'.format({n: i})
                 streamername = '<span style=\'font-size:140%; color:lightgreen; font-weight:bold;\'>' + channel.display_name + '</span>';
             } else {
@@ -93,8 +95,9 @@
             endtag: '</li>'
             });
         }
+
         //console.log(html);
-        $('#streams ul').html(html);
+        $('#streams ul').html(html); // Apply the html to this tag.
 
         //This allows fast switching of streams by changing the param in the videoplayer object,
         $('#streams ul li').click( function() {
@@ -188,15 +191,6 @@
         rightPlusCenterHeight = Math.floor(currWinHeight - hOffset);
         centerOnlyWidth = Math.floor(currWinWidth);
         centerOnlyHeight = Math.floor(currWinHeight - hOffset);
-
-        //Debug
-        // console.log('left: ' + leftPanelWidth + 'x' + leftPanelHeight);
-        // console.log('right: ' + rightPanelWidth + 'x' + rightPanelHeight);
-        // console.log('center: ' + centerPanelWidth + 'x' + centerPanelHeight);
-        // console.log('leftCenter: ' + leftPlusCenterWidth + 'x' + leftPlusCenterHeight);
-        // console.log('rightCenter: ' + rightPlusCenterWidth + 'x' + rightPlusCenterHeight);
-        // console.log('centerOnly: ' + centerOnlyWidth + 'x' + centerOnlyHeight);
-
 
         return {
                 containerW: containerWidth, containerH: containerHeight,
@@ -358,7 +352,6 @@
         <div id='container'>
 
             <div id='header' class='hidden '>
-                <!-- <div id='headerInfoDebug'></div> -->
                 <div id='showhide_left' class="glyph flaticon-arrowheads3"></div>
                 <span style='position: absolute;'><div id='showhide_right' class="glyph flaticon-right39"></div></span>
                 <span id='copyright' class='senlightfont' style='position: absolute; margin: 4px 0px 0px 0px; font-size: medium;'>&copy; 2014 takada</span>
@@ -368,20 +361,17 @@
             </div>
 
             <div id='left' class='panel hidden'>
-<!--                <div id='leftInfoDebug'></div> -->
                 <div id='streams'>
                     <ul></ul>
                 </div>
             </div>
 
             <div id='center'>
-<!--            <div id='centerInfoDebug'></div> -->
                 <div id='videoplayer'>
                 </div>
             </div>
 
             <div id='right' class='panel hidden'>
-                <!-- <div id='rightInfoDebug'></div> -->
                 <div id='chatbox'>
                 <!-- Uncomment this iframe if you intend to debug chat -->
 <!--                    <iframe id='chat_embed'
