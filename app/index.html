@@ -7,9 +7,9 @@
     <meta name='keywords' content='srlplayer takbytes.com SRL speedrunslive speedrunslive streamer speedrunslivestreamer srlstreamer srlplayer'>
     <meta name='author' content='takada'>
     <link rel='stylesheet' href='css/main.css'>
-    <!--<link rel='stylesheet' href='debug.css'>-->
+
     <script src='js/jquery-2.1.1.min.js'></script>
-    <script src='js/twitch.min.js'></script>
+<!--     <script src='js/twitch.min.js'></script> -->
     <script>
     if (typeof jQuery != 'undefined') {
         // jQuery is loaded => print the version
@@ -41,9 +41,11 @@
             srlTeamChannelTable(json);
         });
         */
+
         //'http://api.speedrunslive.com/test/team'      <--- LIVE DATA
         //'test/srlJson.json'                           <--- TEST DATA
         //JSONP
+        console.log('Refreshing streams...');
         $.ajax({
             url: "http://api.speedrunslive.com/test/team",
 
@@ -65,11 +67,13 @@
         var html = '';
         var length = 0;
 
+        /* get the number of current live channels from speedrunslive api json file.*/
         for (key in srlJson.channels) {
             length++;
         }
 
-        for (var i = 0; i < length; i++ ) { // Populates the streams from a json file from speedrunslive.com
+
+        for (var i = 0; i < length; i++ ) { // Populates the streams from a json file from speedrunslive.com.
 
             channel = srlJson.channels[i].channel; // streamer's channel unique name.
 
@@ -78,7 +82,7 @@
 
             currentviewers = '<span style=\'color: red;\'>' + channel.current_viewers + '</span>'; // Number of viewers.
 
-            if (i%2) { //Make even and uneven different colors
+            if (i%2) { //Make even and uneven different colors.
                 list1 = '<li class=\'odd\' value={n}>'.format({n: i})
                 streamername = '<span style=\'font-size:140%; color:lightgreen; font-weight:bold;\'>' + channel.display_name + '</span>';
             } else {
@@ -96,7 +100,6 @@
             });
         }
 
-        //console.log(html);
         $('#streams ul').html(html); // Apply the html to this tag.
 
         //This allows fast switching of streams by changing the param in the videoplayer object,
@@ -141,7 +144,7 @@
                         "<param name='flashvars' value='{flashvars}'/>".format({flashvars: streamer}),
                     "</object>"
                     ].join('');
-        console.log(origin);
+
         player.html(origin);
     }
 
@@ -163,8 +166,8 @@
     }
 
     /*
-    * Creates and returns an object that has resolutions for 3 panels. left, center and right.
-    */
+     * Creates and returns an object that has resolutions for 3 panels. left, center and right.
+     */
     function calcResolutions() {
         hOffset = 26; //Height for our header
         currWinWidth = $(window).width();
@@ -205,7 +208,9 @@
 
     }
 
-    // Apply panel resolutions based on current window sizes to various divs
+    /*
+     * Apply panel resolutions based on current window sizes to various divs
+     */
     function applyResolutions() {
         res = calcResolutions();
 
@@ -255,15 +260,15 @@
 
         $('#chat_embed').css('width', res.rightW);
         $('#chat_embed').css('height', res.rightH);
-        $('#showhide_right').css('margin-left', res.headerW-47); //Align image to far right properly.
+        $('#toggle_right').css('margin-left', res.headerW-47); //Align image to far right properly.
         $('#refresh_streams').css('margin-left', res.leftW-42);
         $('#copyright').css('margin-left', res.headerW-180); //Align to far right properly.
     }
 
-    function showHideLeft() {
+    function toggleLeft() {
         $('#left').toggle(); // Toggle show/hide
         leftShow = !leftShow; // Toggle the boolean.
-        $('#showhide_left').toggleClass('flaticon-arrowheads3 flaticon-right39'); //Toggle where the icon points to.
+        $('#toggle_left').toggleClass('flaticon-arrowheads3 flaticon-right39'); //Toggle where the icon points to.
 
         if (!leftShow && rightShow) { //Left is hidden so expand the videoplayer.
             $('#center').css('width', res.leftCenterW);
@@ -289,10 +294,10 @@
 
     }
 
-    function showHideRight() {
+    function toggleRight() {
         $('#right').toggle();
         rightShow = !rightShow;
-        $('#showhide_right').toggleClass('flaticon-right39 flaticon-arrowheads3');
+        $('#toggle_right').toggleClass('flaticon-right39 flaticon-arrowheads3');
 
         if (leftShow && !rightShow) { //Right is hidden so expand the videoplayer.
             $('#center').css('width', res.rightCenterW);
@@ -327,22 +332,29 @@
 
         applyResolutions(); // Apply panel resolutions based on current window sizes
 
-        $('#showhide_left').click(function(event) {
-            showHideLeft();
+        $('#toggle_left').click(function(event) {
+            toggleLeft();
         });
 
-        $('#showhide_right').click(function(event) {
-            showHideRight();
+        $('#toggle_right').click(function(event) {
+            toggleRight();
         });
 
         $('#refresh_streams').click(function() {
             loadSrlTeamChannels();
         });
+
+        setInterval(function() {
+            loadSrlTeamChannels();
+        }, 180000); // Refresh live channels every 3 minutes
+
     });
 
     $( window ).resize(function() {
         applyResolutions();
     });
+
+
 
     </script>
 
@@ -352,12 +364,10 @@
         <div id='container'>
 
             <div id='header' class='hidden '>
-                <div id='showhide_left' class="glyph flaticon-arrowheads3"></div>
-                <span style='position: absolute;'><div id='showhide_right' class="glyph flaticon-right39"></div></span>
+                <div id='toggle_left' class="glyph flaticon-arrowheads3"></div>
+                <span style='position: absolute;'><div id='toggle_right' class="glyph flaticon-right39"></div></span>
                 <span id='copyright' class='senlightfont' style='position: absolute; margin: 4px 0px 0px 0px; font-size: medium;'>&copy; 2014 takada</span>
                 <span id='refresh_streams' style='position: absolute;'><div class="glyph-icon flaticon-two123"></div></span>
-                <!-- <img id='showhide_left' width='26' height='26' src='img/small_left_right_arrow.png' alt='min'></span> -->
-                <!-- <span style='position: absolute;'><img id='showhide_right' width='26' height='26' src='img/small_left_right_arrow.png' alt='min'></span> -->
             </div>
 
             <div id='left' class='panel hidden'>
