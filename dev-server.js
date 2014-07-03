@@ -39,7 +39,7 @@ home.use(function (req, res, next) {
     next();
 });
 */
-var hostname = 'srl.takbytes.com';
+var hostname = 'srl.tak.com';
 app.use(vhost(hostname, home));
 
 home.get('/', function(req, res) {

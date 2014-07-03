@@ -9,7 +9,7 @@
     <link rel='stylesheet' href='css/main.css'>
     <!--<link rel='stylesheet' href='debug.css'>-->
     <script src='js/jquery-2.1.1.min.js'></script>
-    <script src='js/twitch.min.js'></script>
+<!--     <script src='js/twitch.min.js'></script> -->
     <script>
     if (typeof jQuery != 'undefined') {
         // jQuery is loaded => print the version
@@ -31,19 +31,22 @@
         }
     }
 
+    /*
+     * Ajax calls speedrunslive api and grabs json. Loads the json to a div through srlTeamChannelTable().
+     */
     function loadSrlTeamChannels() { //Check for Memory Leaks. 06/02/2014 Memory leaks came from Adobe's flash. Use Chrome's pepper flash for stability.
 
-        /*
-         * This uses JSON. Note: this method does not work anymore.
-         /
-        $.getJSON('http://api.speedrunslive.com/test/teamcallback=?',function(json){
-            console.log(json);
-            srlTeamChannelTable(json);
-        });
-        */
+
+        // This uses JSON. Note: this method does not work anymore due to CORS ( grab cross-domain resources forbidden)
+//         $.getJSON('http://api.speedrunslive.com/test/teamcallback=?',function(json){
+//             console.log(json);
+//             srlTeamChannelTable(json);
+//         });
+
         //'http://api.speedrunslive.com/test/team'      <--- LIVE DATA
-        //'test/srlJson.json'                           <--- TEST DATA
-        //JSONP
+        //'test/srlJson.json'                           <--- TEST DATA // Use this instead of hammering speedrunslive server.
+
+        // Uses JSONP. Workaround for Access-Control-Allow-Origin header.
         $.ajax({
             url: "http://api.speedrunslive.com/test/team",
 
@@ -61,6 +64,9 @@
         });
     }
 
+    /*
+     * Loads the json to a div through srlTeamChannelTable(). Does most of the work.
+     */
     function srlTeamChannelTable(srlJson) {
         var html = '';
         var length = 0;
@@ -128,12 +134,12 @@
 
         player = $('#videoplayer');
 
-        origin =    ["<object bgcolor='#000000'",
+        html =    ["<object bgcolor='#000000'",
                         "data='http://www.twitch.tv/widgets/archive_embed_player.swf'",
                         "id='videoplayer_embed'",
                         "type='application/x-shockwave-flash'",
-                        "width='{w}'".format({w: res.centerW}),
-                        "height='{h}'>".format({h: res.centerH}),
+                        "width='{w}'".format({ w: res.centerW }),
+                        "height='{h}'>".format({ h: res.centerH }),
                         "<param name='movie' value='http://www.twitch.tv/widgets/archive_embed_player.swf' />",
                         "<param name='allowScriptAccess' value='always' />",
                         "<param name='allowNetworking' value='all' />",
@@ -141,16 +147,24 @@
                         "<param name='flashvars' value='{flashvars}'/>".format({flashvars: streamer}),
                     "</object>"
                     ].join('');
-        console.log(origin);
-        player.html(origin);
+
+        player.html(html);
     }
 
     /* Reinjects HTML with the twitch chat embed pointing to the stream. */
     function reloadChatBox(src) {
         res = calcResolutions();
 
+        console.log(rightShow);
+        if (leftShow && !rightShow) { //Right is hidden so expand the videoplayer.
+            $('#right').toggle();
+            rightShow = !rightShow;
+            $('#toggle_right').toggleClass('flaticon-right39 flaticon-arrowheads3');
+        }
+
         chatbox = $('#chatbox');
-        origin =    ['<iframe ',
+
+        html =    ['<iframe ',
                         'id=\'chat_embed\' ',
                         'frameborder=\'0\' ',
                         'scrolling=\'yes\' ',
@@ -159,12 +173,16 @@
                         'height=\'{h}\'>'.format({h: res.rightH}),
                     '</iframe>'].join('');
 
-        chatbox.html(origin);
+        applyResolutions();
+
+        chatbox.html(html);
+
+
     }
 
     /*
-    * Creates and returns an object that has resolutions for 3 panels. left, center and right.
-    */
+     * Creates and returns an object that has resolutions for 3 panels. left, center and right.
+     */
     function calcResolutions() {
         hOffset = 26; //Height for our header
         currWinWidth = $(window).width();
@@ -176,18 +194,18 @@
         containerWidth = (currWinWidth);
         containerHeight = (currWinHeight);
 
-        leftPanelWidth = Math.floor(0.13 * currWinWidth);
+        leftPanelWidth = Math.ceil(0.14 * currWinWidth);
         leftPanelHeight = Math.floor(currWinHeight - hOffset);
 
         rightPanelWidth = Math.floor(0.18 * currWinWidth);
         rightPanelHeight = Math.floor(currWinHeight - hOffset);
 
-        centerPanelWidth = Math.floor(0.69 * currWinWidth);
+        centerPanelWidth = Math.floor(0.68 * currWinWidth);
         centerPanelHeight = Math.floor(currWinHeight - hOffset);
 
         leftPlusCenterWidth = Math.floor(0.82 * currWinWidth);
         leftPlusCenterHeight = Math.floor(currWinHeight - hOffset);
-        rightPlusCenterWidth = Math.ceil(0.87 * currWinWidth);
+        rightPlusCenterWidth = Math.floor(0.86 * currWinWidth);
         rightPlusCenterHeight = Math.floor(currWinHeight - hOffset);
         centerOnlyWidth = Math.floor(currWinWidth);
         centerOnlyHeight = Math.floor(currWinHeight - hOffset);
@@ -208,6 +226,7 @@
     // Apply panel resolutions based on current window sizes to various divs
     function applyResolutions() {
         res = calcResolutions();
+        verticalScrollbarWidth = 17;
 
         $('#container').css('width', res.containerW);
         $('#container').css('height', res.containerH);
@@ -215,8 +234,8 @@
         $('#header').css('width',res.headerW);
         $('#header').css('height',res.headerH);
 
-        $('#left ul').css('width', res.leftW);
-        $('#left ul li').css('width', res.leftW);
+        $('#left ul').css('width', res.leftW - verticalScrollbarWidth);
+        $('#left ul li').css('width', res.leftW - verticalScrollbarWidth);
 
         if (leftShow) {
             $('#left').css('width', res.leftW);
@@ -255,15 +274,18 @@
 
         $('#chat_embed').css('width', res.rightW);
         $('#chat_embed').css('height', res.rightH);
-        $('#showhide_right').css('margin-left', res.headerW-47); //Align image to far right properly.
+
+        /* Header */
+        $('#toggle_right').css('margin-left', res.headerW-47); //Align image to far right properly.
         $('#refresh_streams').css('margin-left', res.leftW-42);
         $('#copyright').css('margin-left', res.headerW-180); //Align to far right properly.
+        $('#multitwitchchat').css('margin-left', res.leftW); //Align after refresh stream properly.
     }
 
-    function showHideLeft() {
+    function toggleLeft() {
         $('#left').toggle(); // Toggle show/hide
         leftShow = !leftShow; // Toggle the boolean.
-        $('#showhide_left').toggleClass('flaticon-arrowheads3 flaticon-right39'); //Toggle where the icon points to.
+        $('#toggle_left').toggleClass('flaticon-arrowheads3 flaticon-right39'); //Toggle where the icon points to.
 
         if (!leftShow && rightShow) { //Left is hidden so expand the videoplayer.
             $('#center').css('width', res.leftCenterW);
@@ -286,13 +308,12 @@
         if ( leftShow && rightShow) {
             applyResolutions();
         }
-
     }
 
-    function showHideRight() {
+    function toggleRight() {
         $('#right').toggle();
         rightShow = !rightShow;
-        $('#showhide_right').toggleClass('flaticon-right39 flaticon-arrowheads3');
+        $('#toggle_right').toggleClass('flaticon-right39 flaticon-arrowheads3');
 
         if (leftShow && !rightShow) { //Right is hidden so expand the videoplayer.
             $('#center').css('width', res.rightCenterW);
@@ -315,7 +336,6 @@
         if (leftShow && rightShow) {
             applyResolutions();
         }
-
     }
 
     var leftShow = true;
@@ -327,12 +347,12 @@
 
         applyResolutions(); // Apply panel resolutions based on current window sizes
 
-        $('#showhide_left').click(function(event) {
-            showHideLeft();
+        $('#toggle_left').click(function(event) {
+            toggleLeft();
         });
 
-        $('#showhide_right').click(function(event) {
-            showHideRight();
+        $('#toggle_right').click(function(event) {
+            toggleRight();
         });
 
         $('#refresh_streams').click(function() {
@@ -343,24 +363,25 @@
     $( window ).resize(function() {
         applyResolutions();
     });
-
     </script>
 
     </head>
     <body>
-
         <div id='container'>
 
-            <div id='header' class='hidden '>
-                <div id='showhide_left' class="glyph flaticon-arrowheads3"></div>
-                <span style='position: absolute;'><div id='showhide_right' class="glyph flaticon-right39"></div></span>
-                <span id='copyright' class='senlightfont' style='position: absolute; margin: 4px 0px 0px 0px; font-size: medium;'>&copy; 2014 takada</span>
-                <span id='refresh_streams' style='position: absolute;'><div class="glyph-icon flaticon-two123"></div></span>
-                <!-- <img id='showhide_left' width='26' height='26' src='img/small_left_right_arrow.png' alt='min'></span> -->
-                <!-- <span style='position: absolute;'><img id='showhide_right' width='26' height='26' src='img/small_left_right_arrow.png' alt='min'></span> -->
+            <div id='header' class='unselectable'>
+                <div id='toggle_left' style='position: relative; display:inline-block; margin: 0px 0px 0px 0px; cursor: pointer;' class="glyph flaticon-right39"></div>
+
+                <div id='copyright' class='senlightfont' style='position: absolute; display:inline-block; margin: 3px 0px 0px 0px; font-size: medium;'>&copy; 2014 takada</div>
+
+                <div id='refresh_streams' style='position: absolute; display:inline-block; margin: 0px 0px 0px 0px; cursor: pointer;' class="glyph-icon flaticon-two123"></div>
+
+                <span id='multitwitchchat' class='senlightfont' style='position: absolute; display:inline-block; margin: 3px 0px 0px 0px;'><a href='http://mtc.takbytes.com'>multitwitchchat</a></span>
+
+                <div id='toggle_right' style='position: absolute; cursor: pointer; display:inline-block; margin: 0px 0px 0px 0px;' class="glyph flaticon-arrowheads3"></div>
             </div>
 
-            <div id='left' class='panel hidden'>
+            <div id='left'>
                 <div id='streams'>
                     <ul></ul>
                 </div>
@@ -371,7 +392,7 @@
                 </div>
             </div>
 
-            <div id='right' class='panel hidden'>
+            <div id='right'>
                 <div id='chatbox'>
                 <!-- Uncomment this iframe if you intend to debug chat -->
 <!--                    <iframe id='chat_embed'
