@@ -9,13 +9,31 @@
     <link rel='stylesheet' href='css/main.css'>
 
     <script src='js/jquery-2.1.1.min.js'></script>
-<!--     <script src='js/twitch.min.js'></script> -->
-    <script>
-    if (typeof jQuery != 'undefined') {
-        // jQuery is loaded => print the version
-        console.log(jQuery.fn.jquery);
-    }
+    <!--<script src='js/jquery-2.0.3.min.js'></script>-->
+    <!--<script src='js/twitch.min.js'></script>-->
+    <script src='js/jquery.typing-0.2.0.min.js'></script>
+    <script src='js/async.min.js'></script>
+	<script>
+		// Twitch.init({clientId: '6hmvfxikonfu17x6ax3wmc206qtalc8'}, function(error, status) {
+        //     if (error) {
+        //         // error encountered while loading
+        //         console.log(error);
+        //     }
+        //
+        //     // the sdk is now loaded
+        //     if (status.authenticated) {
+        //         console.log('logged in.');
+        //     }
+        //     console.log('Twitch API Initialized');
+		// });
+        //
+		// if (typeof jQuery != 'undefined') {
+		// 	// jQuery is loaded => print the version
+		// 	console.log('jQuery version: ' + jQuery.fn.jquery);
+		// }
+	</script>
 
+    <script>
     /* Similar to what you find in Java's format. */
     /* Usage: chatsrc = 'http://twitch.tv/chat/embed?channel={channel}&amp;popout_chat=true'.format({ channel: streamer}); */
     if (!String.prototype.format) {
@@ -56,8 +74,118 @@
 
             // work with the response
             success: function( response ) {
-                console.log( response ); // server response
+                // console.log( response ); // server response
                 srlTeamChannelTable(response);
+            }
+        });
+    }
+
+    /*
+     * Searches Those you follow that are online.
+     */
+
+    function searchFollowed() {
+        localStorage['twitch_username'] = 'tak_ada';
+
+        $.ajax({
+            url: "https://api.twitch.tv/kraken/users/tak_ada/follows/channels",
+
+            // the name of the callback parameter, as specified by the YQL service
+            jsonp: "callback",
+
+            // tell jQuery we're expecting JSONP
+            dataType: "jsonp",
+
+            // work with the response
+            success: function( streams ) {
+                console.log(streams);
+                ifOnline(streams);
+                //console.log(ifOnline(streams));
+            }
+        });
+    }
+
+    /*
+     * returns stream if online, else returns null.
+     */
+    function ifOnline(streams) {
+        asyncTasks = []
+        var onlineStreams = [];
+
+        // for (i = 0; i < streams._total; i++) {
+        //     asyncTasks.push(
+        //         function(callback) {
+        //             isStreamOnline(streams.follows[i].channel.display_name, function(results) {
+        //                 callback(null, results);
+        //             });
+        //         }
+        //     );
+        // }
+        // console.log(streams.follows);
+        streams.follows.forEach(function(stream) {
+                asyncTasks.push(
+                    function(callback) {
+                        isStreamOnline(stream.channel.display_name, function(results) {
+                            callback(null, results);
+                        });
+                    }
+                );
+                //console.log(stream.channel.display_name);
+        });
+        // isStreamOnline(streams.follows[10], function(results) {
+        //     console.log(results);
+        // });
+        // asyncTasks.push( function(results) {
+        //     isStreamOnline(streams.follows[0], function(results) {
+        //
+        //     });
+        // });
+        // async.parallel(asyncTasks, function(results) {
+        //     console.log(results);
+        // });
+        // async.series(asyncTasks,
+        //     function(err, results) { console.log(results) });
+        async.parallel(asyncTasks,
+        function(err, results) {
+            console.log(results);
+        });
+        // async.series([
+        //     function(callback){
+        //         isStreamOnline(streams.follows[9], function(results) {
+        //             callback(null, (results + '1'));
+        //         })
+        //     },
+        //     function(callback){
+        //         isStreamOnline(streams.follows[9], function(results) {
+        //             callback(null, (results + '2'));
+        //         })
+        //     }
+        //
+        // ],
+        // function(err, results) {
+        //     console.log(results);
+        // });
+        console.log(asyncTasks);
+    }
+
+    function isStreamOnline(streamname, callback) {
+        $.ajax({
+            // url: 'https://api.twitch.tv/kraken/streams/{display_name}'.format({display_name: stream.channel.display_name}),
+            url: 'https://api.twitch.tv/kraken/streams/' + streamname,
+
+            // the name of the callback parameter, as specified by the YQL service
+            jsonp: "callback",
+
+            // tell jQuery we're expecting JSONP
+            dataType: "jsonp",
+
+            // work with the response
+            success: function( stream ) {
+                if (stream.stream) {
+                    callback(stream);
+                }else {
+                    callback(null);
+                }
             }
         });
     }
@@ -86,10 +214,10 @@
 
             if (i%2) { //Make even and uneven different colors.
                 list1 = '<li class=\'odd\' value={n}>'.format({n: i})
-                streamername = '<span style=\'font-size:140%; color:lightgreen; font-weight:bold;\'>' + channel.display_name + '</span>';
+                streamername = '<span style=\'font-size:140%; color:lightgreen; font-weight:bold;\'>{name}</span>'.format({name: channel.display_name});
             } else {
                 list1 = '<li class=\'even\' value={n}>'.format({n: i});
-                streamername = '<span style=\'font-size:140%; color:green; font-weight:bold;\'>' + channel.display_name + '</span>';
+                streamername = '<span style=\'font-size:140%; color:green; font-weight:bold;\'>{name}</span>'.format({name: channel.display_name});
             }
 
             html +=  '{opentag}{img1}{name} {viewers} - {title} {endtag}'.format({
@@ -175,8 +303,6 @@
         applyResolutions();
 
         chatbox.html(html);
-
-
     }
 
     /*
@@ -364,6 +490,7 @@
             loadSrlTeamChannels();
         }, 180000); // Refresh live channels every 3 minutes
 
+        searchFollowed();
     });
 
     $( window ).resize(function() {
