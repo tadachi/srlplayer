@@ -3,35 +3,16 @@
   <head>
     <meta content='text/html; charset=utf-8' http-equiv='content-type'>
     <title>srlplayer - lists popular gaming streams in a tabular format with built-in chat.</title>
-    <meta name="description" content="Twitch stream viewer specifically for speedrunslive streamers <3. http://srl.takbytes.com">
+    <meta name='description' content='Twitch stream viewer specifically for speedrunslive streamers <3. http://srl.takbytes.com'>
     <meta name='keywords' content='srlplayer takbytes.com SRL speedrunslive speedrunslive streamer speedrunslivestreamer srlstreamer srlplayer'>
     <meta name='author' content='takada'>
     <link rel='stylesheet' href='css/main.css'>
 
     <script src='js/jquery-2.1.1.min.js'></script>
     <!--<script src='js/jquery-2.0.3.min.js'></script>-->
-    <!--<script src='js/twitch.min.js'></script>-->
     <script src='js/jquery.typing-0.2.0.min.js'></script>
     <script src='js/async.min.js'></script>
-	<script>
-		// Twitch.init({clientId: '6hmvfxikonfu17x6ax3wmc206qtalc8'}, function(error, status) {
-        //     if (error) {
-        //         // error encountered while loading
-        //         console.log(error);
-        //     }
-        //
-        //     // the sdk is now loaded
-        //     if (status.authenticated) {
-        //         console.log('logged in.');
-        //     }
-        //     console.log('Twitch API Initialized');
-		// });
-        //
-		// if (typeof jQuery != 'undefined') {
-		// 	// jQuery is loaded => print the version
-		// 	console.log('jQuery version: ' + jQuery.fn.jquery);
-		// }
-	</script>
+    <!--<script src='js/simple-storage.min.js'></script>-->
 
     <script>
     /* Similar to what you find in Java's format. */
@@ -50,184 +31,94 @@
     }
 
     /*
-     * Ajax calls speedrunslive api and grabs json. Loads the json to a div through srlTeamChannelTable().
+     * Ajax calls speedrunslive api and grabs json. Loads the json to a div through srlAndFollowedStreamTable().
+     * Also can load followed streams that are online.
      */
-    function loadSrlTeamChannels() { //Check for Memory Leaks. 06/02/2014 Memory leaks came from Adobe's flash. Use Chrome's pepper flash for stability.
-        // This uses JSON. Note: this method does not work anymore due to CORS ( grab cross-domain resources forbidden)
-//         $.getJSON('http://api.speedrunslive.com/test/teamcallback=?',function(json){
-//             console.log(json);
-//             srlTeamChannelTable(json);
-//         });
-
+    function loadStreams() {
         //'http://api.speedrunslive.com/test/team'      <--- LIVE DATA
         //'test/srlJson.json'                           <--- TEST DATA // Use this instead of hammering speedrunslive server.
+        twitchusername = '';
+        if (localStorage.getItem('twitchusername')) {
+            twitchusername = localStorage.getItem('twitchusername')
+        }
 
-        // Uses JSONP. Workaround for Access-Control-Allow-Origin header.
-        $.ajax({
-            url: "http://api.speedrunslive.com/test/team",
+        // async.parallel will run all tasks at the same time.
 
-            // the name of the callback parameter, as specified by the YQL service
-            jsonp: "callback",
+        async.parallel([
+            function (callback) {
+                getOnlineFollowedStreams(twitchusername, function(results) {
+                    callback(null, results);
+                });
+            },
+            function (callback) {
+                $.ajax({
+                    url: 'http://api.speedrunslive.com/test/team',
 
-            // tell jQuery we're expecting JSONP
-            dataType: "jsonp",
+                    // the name of the callback parameter, as specified by the YQL service
+                    jsonp: 'callback',
 
-            // work with the response
-            success: function( response ) {
-                // console.log( response ); // server response
-                srlTeamChannelTable(response);
-            }
-        });
-    }
+                    // tell jQuery we're expecting JSONP
+                    dataType: 'jsonp', // Use JSONP. Workaround for Access-Control-Allow-Origin header.
 
-    /*
-     * Searches Those you follow that are online.
-     */
-
-    function searchFollowed() {
-        localStorage['twitch_username'] = 'tak_ada';
-
-        $.ajax({
-            url: "https://api.twitch.tv/kraken/users/tak_ada/follows/channels",
-
-            // the name of the callback parameter, as specified by the YQL service
-            jsonp: "callback",
-
-            // tell jQuery we're expecting JSONP
-            dataType: "jsonp",
-
-            // work with the response
-            success: function( streams ) {
-                console.log(streams);
-                ifOnline(streams);
-                //console.log(ifOnline(streams));
-            }
-        });
-    }
-
-    /*
-     * returns stream if online, else returns null.
-     */
-    function ifOnline(streams) {
-        asyncTasks = []
-        var onlineStreams = [];
-
-        // for (i = 0; i < streams._total; i++) {
-        //     asyncTasks.push(
-        //         function(callback) {
-        //             isStreamOnline(streams.follows[i].channel.display_name, function(results) {
-        //                 callback(null, results);
-        //             });
-        //         }
-        //     );
-        // }
-        // console.log(streams.follows);
-        streams.follows.forEach(function(stream) {
-                asyncTasks.push(
-                    function(callback) {
-                        isStreamOnline(stream.channel.display_name, function(results) {
-                            callback(null, results);
-                        });
+                    // work with the response
+                    success: function( srlJson ) {
+                        // console.log( response ); // server response
+                        //srlAndFollowedStreamTable( srlJson );
+                        callback(null, srlJson);
                     }
-                );
-                //console.log(stream.channel.display_name);
-        });
-        // isStreamOnline(streams.follows[10], function(results) {
-        //     console.log(results);
-        // });
-        // asyncTasks.push( function(results) {
-        //     isStreamOnline(streams.follows[0], function(results) {
-        //
-        //     });
-        // });
-        // async.parallel(asyncTasks, function(results) {
-        //     console.log(results);
-        // });
-        // async.series(asyncTasks,
-        //     function(err, results) { console.log(results) });
-        async.parallel(asyncTasks,
-        function(err, results) {
-            console.log(results);
-        });
-        // async.series([
-        //     function(callback){
-        //         isStreamOnline(streams.follows[9], function(results) {
-        //             callback(null, (results + '1'));
-        //         })
-        //     },
-        //     function(callback){
-        //         isStreamOnline(streams.follows[9], function(results) {
-        //             callback(null, (results + '2'));
-        //         })
-        //     }
-        //
-        // ],
-        // function(err, results) {
-        //     console.log(results);
-        // });
-        console.log(asyncTasks);
-    }
-
-    function isStreamOnline(streamname, callback) {
-        $.ajax({
-            // url: 'https://api.twitch.tv/kraken/streams/{display_name}'.format({display_name: stream.channel.display_name}),
-            url: 'https://api.twitch.tv/kraken/streams/' + streamname,
-
-            // the name of the callback parameter, as specified by the YQL service
-            jsonp: "callback",
-
-            // tell jQuery we're expecting JSONP
-            dataType: "jsonp",
-
-            // work with the response
-            success: function( stream ) {
-                if (stream.stream) {
-                    callback(stream);
-                }else {
-                    callback(null);
-                }
+                });
             }
+        ],
+        function(err, streams) { // Each task will push their callbacks into an array.
+            // console.log(streams);
+            srlAndFollowedStreamTable(streams);
         });
+
     }
 
     /*
-     * Loads the json to a div through srlTeamChannelTable(). Does most of the work.
+     * Loads the json to a div through srlAndFollowedStreamTable(). Does most of the work.
      */
-    function srlTeamChannelTable(srlJson) {
+    function srlAndFollowedStreamTable(streams) {
         var html = '';
         var length = 0;
 
-        /* get the number of current live channels from speedrunslive api json file.*/
-        for (key in srlJson.channels) {
-            length++;
+        if (streams[0]) {
+            for (i = 0; i < streams[0].length; i++) {
+                if (streams[0][i]) {
+                    stream = streams[0][i].stream;
+                    // console.log(stream);
+                    html += buildStreamSelectorHTML(stream.channel.display_name, stream.channel.logo, stream.channel.status, stream.viewers, true);
+                }
+            }
         }
 
+        for (i = 0; i < streams[1].channels.length; i++ ) { // Populates the streams from a json file from speedrunslive.com.
 
-        for (var i = 0; i < length; i++ ) { // Populates the streams from a json file from speedrunslive.com.
+            channel = streams[1].channels[i].channel; // streamer's channel unique name.
 
-            channel = srlJson.channels[i].channel; // streamer's channel unique name.
+            html += buildStreamSelectorHTML(channel.display_name, channel.image.size70, channel.title, channel.current_viewers, false);
 
-            image = '<img width=60 height=60 align=\'left\' src=\' ' + // Streamer's logo
-                channel.image.size70 + '\' alt=min>';
-
-            currentviewers = '<span style=\'color: red;\'>' + channel.current_viewers + '</span>'; // Number of viewers.
-
-            if (i%2) { //Make even and uneven different colors.
-                list1 = '<li class=\'odd\' value={n}>'.format({n: i})
-                streamername = '<span style=\'font-size:140%; color:lightgreen; font-weight:bold;\'>{name}</span>'.format({name: channel.display_name});
-            } else {
-                list1 = '<li class=\'even\' value={n}>'.format({n: i});
-                streamername = '<span style=\'font-size:140%; color:green; font-weight:bold;\'>{name}</span>'.format({name: channel.display_name});
-            }
-
-            html +=  '{opentag}{img1}{name} {viewers} - {title} {endtag}'.format({
-            opentag: list1,
-            img1: image,
-            name: streamername,
-            title: channel.title,
-            viewers: currentviewers,
-            endtag: '</li>'
-            });
+            // image = '<img width=60 height=60 align=\'left\' src=\'{logo}\' alt=min>'.format({logo: channel.image.size70}); // Streamer's logo
+            //
+            // currentviewers = '<span style=\'color: red;\'>{viewercount}</span>'.format({viewercount: channel.current_viewers}); // Number of viewers.
+            //
+            // if (i%2) { //Make even and uneven different colors.
+            //     list1 = '<li class=\'odd\' value={n}>'.format({n: i})
+            //     streamer_name = '<span style=\'font-size:140%; color:lightgreen; font-weight:bold;\'>{name}</span>'.format({name: channel.display_name});
+            // } else {
+            //     list1 = '<li class=\'even\' value={n}>'.format({n: i});
+            //     streamer_name = '<span style=\'font-size:140%; color:green; font-weight:bold;\'>{name}</span>'.format({name: channel.display_name});
+            // }
+            //
+            // html +=  '{opentag}{img1}{name} {viewers} - {title} {endtag}'.format({
+            // opentag: list1,
+            // img1: image,
+            // name: streamer_name,
+            // title: channel.title,
+            // viewers: currentviewers,
+            // endtag: '</li>'
+            // });
         }
 
         $('#streams ul').html(html); // Apply the html to this tag.
@@ -241,7 +132,7 @@
                 CHANNEL: data[0]});
 
             // Change the video channel via DOM
-            $('#videoplayer_embed param[name=flashvars]').attr('value', flashvars );
+            $('#videoplayerembed param[name=flashvars]').attr('value', flashvars );
 
             // Reinject the videoplayer with the new params pointing to the chosen stream.
             reloadVideoPlayer(flashvars);
@@ -253,6 +144,33 @@
             //$('#chat_embed').prop('src', chatsrc);     // this is Faster does not work in IE.
             reloadChatBox(chatsrc);                      // reinjects iframes. Slightly slower. Does not work in IE either.
         });
+
+        function buildStreamSelectorHTML(streamer_name, image, title, current_viewers, followed) {
+            image = '<img width=60 height=60 align=\'left\' src=\'{logo}\' alt=min>'.format({logo: image}); // Streamer's logo
+
+            currentviewers = '<span style=\'color: red;\'>{viewercount}</span>'.format({viewercount: current_viewers}); // Number of viewers.
+
+            if (followed) {
+                list1 = '<li class=\'followed\' value={n}>'.format({n: i})
+                streamer_name = '<span style=\'font-size:140%; color:lightgreen; font-weight:bold;\'>{name}</span>'.format({name: streamer_name});
+            }
+            else if (i%2) { //Make even and uneven different colors.
+                list1 = '<li class=\'odd\' value={n}>'.format({n: i})
+                streamer_name = '<span style=\'font-size:140%; color:lightgreen; font-weight:bold;\'>{name}</span>'.format({name: streamer_name});
+            } else {
+                list1 = '<li class=\'even\' value={n}>'.format({n: i});
+                streamer_name = '<span style=\'font-size:140%; color:green; font-weight:bold;\'>{name}</span>'.format({name: streamer_name});
+            }
+
+            return '{opentag}{img1}{name} {viewers} - {title} {endtag}'.format({
+                        opentag: list1,
+                        img1: image,
+                        name: streamer_name,
+                        title: title,
+                        viewers: currentviewers,
+                        endtag: '</li>'
+                        });
+        }
     }
 
     /* Reinjects HTML with the twitch embed pointing to the stream. */
@@ -263,7 +181,7 @@
 
         html =    ["<object bgcolor='#000000'",
                         "data='http://www.twitch.tv/widgets/archive_embed_player.swf'",
-                        "id='videoplayer_embed'",
+                        "id='videoplayerembed'",
                         "type='application/x-shockwave-flash'",
                         "width='{w}'".format({ w: res.centerW }),
                         "height='{h}'>".format({ h: res.centerH }),
@@ -282,11 +200,10 @@
     function reloadChatBox(src) {
         res = calcResolutions();
 
-        console.log(rightShow);
         if (leftShow && !rightShow) { //Right is hidden so expand the videoplayer.
             $('#right').toggle();
             rightShow = !rightShow;
-            $('#toggle_right').toggleClass('flaticon-right39 flaticon-arrowheads3');
+            $('#toggleright').toggleClass('flaticon-right39 flaticon-arrowheads3');
         }
 
         chatbox = $('#chatbox');
@@ -306,6 +223,77 @@
     }
 
     /*
+     * Searches Those you follow that are online.
+     */
+    function getOnlineFollowedStreams(name, callback) {
+        $.ajax({
+            url: 'https://api.twitch.tv/kraken/users/{name}/follows/channels'.format({name: name}),
+
+            jsonp: 'callback',
+
+            dataType: 'jsonp', // tell jQuery we're expecting JSONP.
+
+            success: function( streams ) { // Process with the response.
+                // console.log(streams);
+                if(streams.follows) {
+                    getOnlineFollowed(streams, function(results) {
+                        callback( results );
+                    });
+                }else{
+                    callback(null);
+                }
+            }
+        });
+    }
+
+    /*
+     * Returns an array of streams that are online.
+     * See https://github.com/caolan/async for more details on async.js
+     */
+    function getOnlineFollowed(streams, callback) {
+        var asyncTasks = [];
+
+        // Array of streams to see if online.
+        streams.follows.forEach(function(stream) {
+                asyncTasks.push(
+                    function(callback) {
+                        isStreamOnline(stream.channel.display_name, function(results) {
+                            callback(null, results);
+                        });
+                    }
+                );
+        });
+
+        // async.parallel will run all tasks at the same time.
+        async.parallel( asyncTasks,
+        function(err, results) { // Each task will push their callbacks into an array.
+            callback(results);
+        });
+    }
+
+    /*
+     * Will check if stream is online.
+     * see https://github.com/justintv/Twitch-API/blob/master/v3_resources/streams.md to get an idea of how it works.
+     */
+    function isStreamOnline(streamname, callback) {
+        $.ajax({
+            url: 'https://api.twitch.tv/kraken/streams/' + streamname,
+
+            jsonp: 'callback',
+
+            dataType: 'jsonp', // tell jQuery we're expecting JSONP.
+
+            success: function( stream ) { // work with the response.
+                if (stream.stream) {
+                    callback(stream);
+                }else {
+                    callback(null);
+                }
+            }
+        });
+    }
+
+    /*
      * Creates and returns an object that has resolutions for 3 panels. left, center and right.
      */
     function calcResolutions() {
@@ -319,8 +307,11 @@
         containerWidth = (currWinWidth);
         containerHeight = (currWinHeight);
 
-        leftPanelWidth = Math.ceil(0.14 * currWinWidth);
+        leftPanelWidth = Math.ceil( limitTo(261, (0.14 * currWinWidth)) );
         leftPanelHeight = Math.floor(currWinHeight - hOffset);
+
+        settingsMenuWidth = Math.ceil(0.14 * currWinWidth);
+        settingsMenuHeight = Math.floor(500);
 
         rightPanelWidth = Math.floor(0.18 * currWinWidth);
         rightPanelHeight = Math.floor(currWinHeight - hOffset);
@@ -343,9 +334,17 @@
                 centerW: centerPanelWidth, centerH: centerPanelHeight,
                 leftCenterW: leftPlusCenterWidth, leftCenterH: leftPlusCenterHeight,
                 rightCenterW: rightPlusCenterWidth, rightCenterH: rightPlusCenterHeight,
-                centerOnlyW: centerOnlyWidth, centerOnlyH: centerOnlyHeight
+                centerOnlyW: centerOnlyWidth, centerOnlyH: centerOnlyHeight,
+                settingMenuW: settingsMenuWidth, settingsMenuH: settingsMenuHeight
                 };
 
+    }
+
+    function limitTo(limit, current) {
+        if (current <= limit) {
+            return limit;
+        }
+        return current;
     }
 
     /*
@@ -361,8 +360,12 @@
         $('#header').css('width',res.headerW);
         $('#header').css('height',res.headerH);
 
-        $('#left ul').css('width', res.leftW - verticalScrollbarWidth);
-        $('#left ul li').css('width', res.leftW - verticalScrollbarWidth);
+        // $('#left ul').css('width', res.leftW - verticalScrollbarWidth);
+        // $('#left ul li').css('width', res.leftW - verticalScrollbarWidth);
+
+        $('#settingsmenu').css('width', res.leftW);
+        $('#settingsmenu').css('height', 500);
+        $('#settingsmenu').css('margin-top', headerPanelHeight);
 
         if (leftShow) {
             $('#left').css('width', res.leftW);
@@ -375,36 +378,37 @@
         if (!leftShow && rightShow) {
             $('#center').css('width', res.leftCenterW);
             $('#center').css('height', res.leftCenterH);
-            $('#videoplayer_embed').css('width', res.leftCenterW);
-            $('#videoplayer_embed').css('height', res.leftCenterH);
+            $('#videoplayerembed').css('width', res.leftCenterW);
+            $('#videoplayerembed').css('height', res.leftCenterH);
         }else if (leftShow && !rightShow) {
             $('#center').css('width', res.rightCenterW);
             $('#center').css('height', res.rightCenterH);
-            $('#videoplayer_embed').css('width', res.rightCenterW);
-            $('#videoplayer_embed').css('height', res.rightCenterH);
+            $('#videoplayerembed').css('width', res.rightCenterW);
+            $('#videoplayerembed').css('height', res.rightCenterH);
         }else if ( (!leftShow && !rightShow) ) {
             $('#center').css('width', res.centerOnlyW);
             $('#center').css('height', res.centerOnlyH);
-            $('#videoplayer_embed').css('width', res.centerOnlyW);
-            $('#videoplayer_embed').css('height', res.centerOnlyH);
+            $('#videoplayerembed').css('width', res.centerOnlyW);
+            $('#videoplayerembed').css('height', res.centerOnlyH);
         }else if (leftShow && !rightShow) {
             $('#center').css('width', res.rightCenterW);
             $('#center').css('height', res.rightCenterH);
-            $('#videoplayer_embed').css('width', res.rightCenterW);
-            $('#videoplayer_embed').css('height', res.rightCenterH);
+            $('#videoplayerembed').css('width', res.rightCenterW);
+            $('#videoplayerembed').css('height', res.rightCenterH);
         }else {
             $('#center').css('width', res.centerW);
             $('#center').css('height', res.centerH);
-            $('#videoplayer_embed').css('width', res.centerW);
-            $('#videoplayer_embed').css('height', res.centerH);
+            $('#videoplayerembed').css('width', res.centerW);
+            $('#videoplayerembed').css('height', res.centerH);
         }
 
         $('#chat_embed').css('width', res.rightW);
         $('#chat_embed').css('height', res.rightH);
 
         /* Header */
-        $('#toggle_right').css('margin-left', res.headerW-47); //Align image to far right properly.
-        $('#refresh_streams').css('margin-left', res.leftW-42);
+        $('#toggleright').css('margin-left', res.headerW-47); //Align image to far right properly.
+        $('#settings').css('margin-left', res.leftW -195);
+        $('#refreshstreams').css('margin-left', res.leftW-42);
         $('#copyright').css('margin-left', res.headerW-180); //Align to far right properly.
         $('#multitwitchchat').css('margin-left', res.leftW); //Align after refresh stream properly.
     }
@@ -412,25 +416,25 @@
     function toggleLeft() {
         $('#left').toggle(); // Toggle show/hide
         leftShow = !leftShow; // Toggle the boolean.
-        $('#toggle_left').toggleClass('flaticon-arrowheads3 flaticon-right39'); //Toggle where the icon points to.
+        $('#toggleleft').toggleClass('flaticon-arrowheads3 flaticon-right39'); //Toggle where the icon points to.
 
         if (!leftShow && rightShow) { //Left is hidden so expand the videoplayer.
             $('#center').css('width', res.leftCenterW);
             $('#center').css('height', res.leftCenterH);
-            $('#videoplayer_embed').css('width', res.leftCenterW);
-            $('#videoplayer_embed').css('height', res.leftCenterH);
+            $('#videoplayerembed').css('width', res.leftCenterW);
+            $('#videoplayerembed').css('height', res.leftCenterH);
         }
         if ( (!leftShow && !rightShow) ) { //Both left and right are hidden so maximize videoplayer.
             $('#center').css('width', res.centerOnlyW);
             $('#center').css('height', res.centerOnlyH);
-            $('#videoplayer_embed').css('width', res.centerOnlyW);
-            $('#videoplayer_embed').css('height', res.centerOnlyH);
+            $('#videoplayerembed').css('width', res.centerOnlyW);
+            $('#videoplayerembed').css('height', res.centerOnlyH);
         }
         if (leftShow && !rightShow) { //Right is hidden so expand the videoplayer.
             $('#center').css('width', res.rightCenterW);
             $('#center').css('height', res.rightCenterH);
-            $('#videoplayer_embed').css('width', res.rightCenterW);
-            $('#videoplayer_embed').css('height', res.rightCenterH);
+            $('#videoplayerembed').css('width', res.rightCenterW);
+            $('#videoplayerembed').css('height', res.rightCenterH);
         }
         if ( leftShow && rightShow) {
             applyResolutions();
@@ -440,25 +444,25 @@
     function toggleRight() {
         $('#right').toggle();
         rightShow = !rightShow;
-        $('#toggle_right').toggleClass('flaticon-right39 flaticon-arrowheads3');
+        $('#toggleright').toggleClass('flaticon-right39 flaticon-arrowheads3');
 
         if (leftShow && !rightShow) { //Right is hidden so expand the videoplayer.
             $('#center').css('width', res.rightCenterW);
             $('#center').css('height', res.rightCenterH);
-            $('#videoplayer_embed').css('width', res.rightCenterW);
-            $('#videoplayer_embed').css('height', res.rightCenterH);
+            $('#videoplayerembed').css('width', res.rightCenterW);
+            $('#videoplayerembed').css('height', res.rightCenterH);
         }
         if ( (!leftShow && !rightShow) ) { //Both left and right are hidden so maximize videoplayer.
             $('#center').css('width', res.centerOnlyW);
             $('#center').css('height', res.centerOnlyH);
-            $('#videoplayer_embed').css('width', res.centerOnlyW);
-            $('#videoplayer_embed').css('height', res.centerOnlyH);
+            $('#videoplayerembed').css('width', res.centerOnlyW);
+            $('#videoplayerembed').css('height', res.centerOnlyH);
         }
         if (!leftShow && rightShow) { //Left is hidden so expand the videoplayer.
             $('#center').css('width', res.leftCenterW);
             $('#center').css('height', res.leftCenterH);
-            $('#videoplayer_embed').css('width', res.leftCenterW);
-            $('#videoplayer_embed').css('height', res.leftCenterH);
+            $('#videoplayerembed').css('width', res.leftCenterW);
+            $('#videoplayerembed').css('height', res.leftCenterH);
         }
         if (leftShow && rightShow) {
             applyResolutions();
@@ -470,27 +474,51 @@
 
     /* Main */
     $( document ).ready(function() {
-        loadSrlTeamChannels();
+        loadStreams();
 
         applyResolutions(); // Apply panel resolutions based on current window sizes
 
-        $('#toggle_left').click(function(event) {
+        $('#toggleleft').click(function(event) {
             toggleLeft();
         });
 
-        $('#toggle_right').click(function(event) {
+        $('#toggleright').click(function(event) {
             toggleRight();
         });
 
-        $('#refresh_streams').click(function() {
-            loadSrlTeamChannels();
+        $('#refreshstreams').click(function() {
+            loadStreams();
         });
 
+        $('#settings').click(function() {
+            $('#settingsmenu').toggle();
+        })
+
         setInterval(function() {
-            loadSrlTeamChannels();
+            loadStreams();
         }, 180000); // Refresh live channels every 3 minutes
 
-        searchFollowed();
+        /*** Manage settings with session/localstorage ***/
+        if( localStorage.getItem('twitchusername') ) {
+            $('#twitchusername').val(localStorage.getItem('twitchusername'));
+            $('#showfollowedstreams').prop('checked', true); // Checkbox is checked.
+            $("#twitchusername").prop('disabled',true); // Disable textbox.
+        }
+
+        $('#showfollowedstreams').click(function() { // Toggle show followers on list of streamers.
+            if ($(this).is(':checked')) {
+                localStorage.setItem('twitchusername', $('#twitchusername').val());
+                $("#twitchusername").prop('disabled',true); // Disable textbox.
+            }else {
+                $("#twitchusername").prop('disabled',false); // Enable textbox.
+                localStorage.removeItem('twitchusername');
+            }
+        });
+
+        $('#apply').click(function() {
+            location.reload();
+        });
+
     });
 
     $( window ).resize(function() {
@@ -501,16 +529,26 @@
     </head>
     <body>
         <div id='container'>
+            <div id='settingsmenu'>
+                <div style='position: relative; border: 1px solid;'>
+                    <input id='showfollowedstreams' type='checkbox'>Enable show followed streams. Enter twitch username only:
+                    <input id='twitchusername' type='text' value=''></input>
+                </div>
+                <button id='apply' style='float: right; margin-top: 20px;' >Apply</button>
+            </div>
+
             <div id='header' class='unselectable'>
-                <div id='toggle_left' style='position: relative; display:inline-block; margin: 0px 0px 0px 0px; cursor: pointer;' class="glyph flaticon-right39"></div>
+                <div id='toggleleft'  style='position: relative; display:inline-block; margin: 0px 0px 0px 0px; cursor: pointer;' class='glyph flaticon-right39'></div>
+
+                <div id='settings' class='senlightfont unselectable' style='position: absolute; display:inline-block; cursor: pointer; margin: 3px 0px 0px 0px; font-size: medium;'>Settings</div>
 
                 <div id='copyright' class='senlightfont' style='position: absolute; display:inline-block; margin: 3px 0px 0px 0px; font-size: medium;'>&copy; 2014 takada</div>
 
-                <div id='refresh_streams' style='position: absolute; display:inline-block; margin: 0px 0px 0px 0px; cursor: pointer;' class="glyph-icon flaticon-two123"></div>
+                <div id='refreshstreams' style='position: absolute; display:inline-block; margin: 0px 0px 0px 0px; cursor: pointer;' class='glyph-icon flaticon-two123'></div>
 
-                <span id='multitwitchchat' class='senlightfont' style='position: absolute; display:inline-block; margin: 3px 0px 0px 0px;'><a href='http://mtc.takbytes.com'>multitwitchchat</a></span>
+                <span id='multitwitchchat' class='senlightfont unselectable' style='position: absolute; display:inline-block; margin: 3px 0px 0px 0px;'><a href='http://mtc.takbytes.com'>multitwitchchat</a></span>
 
-                <div id='toggle_right' style='position: absolute; cursor: pointer; display:inline-block; margin: 0px 0px 0px 0px;' class="glyph flaticon-arrowheads3"></div>
+                <div id='toggleright' style='position: absolute; cursor: pointer; display:inline-block; margin: 0px 0px 0px 0px;' class='glyph flaticon-arrowheads3'></div>
             </div>
 
             <div id='left'>
@@ -526,14 +564,6 @@
 
             <div id='right'>
                 <div id='chatbox'>
-                <!-- Uncomment this iframe if you intend to debug chat -->
-<!--                    <iframe id='chat_embed'
-                            frameborder='0'
-                            scrolling='yes'
-                            src=''
-                            width='350'
-                            height='500'>
-                    </iframe> -->
                 </div>
             </div>
 
