@@ -15,8 +15,10 @@
     <!--<script src='js/simple-storage.min.js'></script>-->
 
     <script>
-    /* Similar to what you find in Java's format. */
-    /* Usage: chatsrc = 'http://twitch.tv/chat/embed?channel={channel}&amp;popout_chat=true'.format({ channel: streamer}); */
+    /*
+     * Similar to what you find in Java's format.
+     * Usage: chatsrc = 'http://twitch.tv/chat/embed?channel={channel}&amp;popout_chat=true'.format({ channel: streamer});
+     */
     if (!String.prototype.format) {
         String.prototype.format = function() {
             var str = this.toString();
@@ -30,6 +32,38 @@
         }
     }
 
+    /*
+     * Example usage:
+     *   "http://dummy.com/?technology=jquery&blog=jquerybyexample".
+     *   var tech = getQueryStringParams('technology');
+     *   var blog = getQueryStringParams('blog');
+     */
+     function getQueryStringParams(sParam) {
+        var sPageURL = window.location.href;
+        var sURLVariables = sPageURL.split('/');
+        var querystring;
+        var count = 0;
+        var key;
+        var value;
+
+        for (i = 0; i < sURLVariables.length; i++) {
+            if (sURLVariables[i].substring(0, 1) == '?') { // Found query string.
+                querystring = sURLVariables[i].substring(1).split('&');
+            }
+        }
+
+        querystring.forEach(function(a){ count++; }); // Count number of elements in querystring.
+
+        for (i = 0; i < querystring.length; i++) {
+            arr = querystring[i].split('=');
+            key = arr[0];
+            value = arr[1];
+            if (key == sParam) { // key mataches param.
+                return value;    // Return match.
+            }
+        }
+        return null;
+     }
     /*
      * Ajax calls speedrunslive api and grabs json. Loads the json to a div through srlAndFollowedStreamTable().
      * Also can load followed streams that are online.
@@ -85,10 +119,10 @@
 
         if (streams[0]) {
             for (i = 0; i < streams[0].length; i++) {
-                if (streams[0][i]) {
+                if (streams[0][i]) { //Ignore null streams(offline) and add only streams that are online.
                     stream = streams[0][i].stream;
                     // console.log(stream);
-                    html += buildStreamSelectorHTML(stream.channel.display_name, stream.channel.logo, stream.channel.status, stream.viewers, true);
+                    html += buildStreamSelectorHTML(stream.channel.name, stream.channel.logo, stream.channel.status, stream.viewers, true); // Build the html string with online streams.
                 }
             }
         }
@@ -97,87 +131,49 @@
 
             channel = streams[1].channels[i].channel; // streamer's channel unique name.
 
-            html += buildStreamSelectorHTML(channel.display_name, channel.image.size70, channel.title, channel.current_viewers, false);
-
-            // image = '<img width=60 height=60 align=\'left\' src=\'{logo}\' alt=min>'.format({logo: channel.image.size70}); // Streamer's logo
-            //
-            // currentviewers = '<span style=\'color: red;\'>{viewercount}</span>'.format({viewercount: channel.current_viewers}); // Number of viewers.
-            //
-            // if (i%2) { //Make even and uneven different colors.
-            //     list1 = '<li class=\'odd\' value={n}>'.format({n: i})
-            //     streamer_name = '<span style=\'font-size:140%; color:lightgreen; font-weight:bold;\'>{name}</span>'.format({name: channel.display_name});
-            // } else {
-            //     list1 = '<li class=\'even\' value={n}>'.format({n: i});
-            //     streamer_name = '<span style=\'font-size:140%; color:green; font-weight:bold;\'>{name}</span>'.format({name: channel.display_name});
-            // }
-            //
-            // html +=  '{opentag}{img1}{name} {viewers} - {title} {endtag}'.format({
-            // opentag: list1,
-            // img1: image,
-            // name: streamer_name,
-            // title: channel.title,
-            // viewers: currentviewers,
-            // endtag: '</li>'
-            // });
+            html += buildStreamSelectorHTML(channel.name, channel.image.size70, channel.title, channel.current_viewers, false); // Append html string with SRL streams.
         }
 
-        $('#streams ul').html(html); // Apply the html to this tag.
-
-        //This allows fast switching of streams by changing the param in the videoplayer object,
-        $('#streams ul li').click( function() {
-            data = $(this).text().split(' '); // data[0] or first item is the channel name. the rest of array not needed.
-
-            // Create the channel string based on chosen stream.
-            flashvars = 'channel={CHANNEL}&auto_play=true'.format({
-                CHANNEL: data[0]});
-
-            // Change the video channel via DOM
-            $('#videoplayerembed param[name=flashvars]').attr('value', flashvars );
-
-            // Reinject the videoplayer with the new params pointing to the chosen stream.
-            reloadVideoPlayer(flashvars);
-
-            // Change the chat to the corresponding video channel.
-            chatsrc = 'http://twitch.tv/chat/embed?channel={ch}&amp;popout_chat=true'.format({
-                ch: data[0]});
-
-            //$('#chat_embed').prop('src', chatsrc);     // this is Faster does not work in IE.
-            reloadChatBox(chatsrc);                      // reinjects iframes. Slightly slower. Does not work in IE either.
-        });
+        $('#streams ul').html(html); // Apply the combined html to this tag.
 
         function buildStreamSelectorHTML(streamer_name, image, title, current_viewers, followed) {
+            if (followed) {
+                opentag = '<a href=\'#!/?streamer={streamer}\'><li class=\'followed\'>'.format({streamer: streamer_name});;
+                streamer_name = '<span style=\'font-size:140%; color:green; font-weight:bold;\'>{name}</span>'.format({name: streamer_name});
+            }
+            else if (i%2) { //Make even and uneven different colors.
+                opentag = '<a href=\'#!/?streamer={streamer}\'><li class=\'odd\'>'.format({streamer: streamer_name});;
+                streamer_name = '<span class=\'oddtitle\'>{name}</span>'.format({name: streamer_name});
+            } else {
+                opentag = '<a href=\'#!/?streamer={streamer}\'><li class=\'even\'>'.format({streamer: streamer_name});
+                streamer_name = '<span class=\'eventitle\'>{streamer}</span>'.format({streamer: streamer_name});
+            }
+
             image = '<img width=60 height=60 align=\'left\' src=\'{logo}\' alt=min>'.format({logo: image}); // Streamer's logo
 
             currentviewers = '<span style=\'color: red;\'>{viewercount}</span>'.format({viewercount: current_viewers}); // Number of viewers.
 
-            if (followed) {
-                list1 = '<li class=\'followed\' value={n}>'.format({n: i})
-                streamer_name = '<span style=\'font-size:140%; color:lightgreen; font-weight:bold;\'>{name}</span>'.format({name: streamer_name});
-            }
-            else if (i%2) { //Make even and uneven different colors.
-                list1 = '<li class=\'odd\' value={n}>'.format({n: i})
-                streamer_name = '<span style=\'font-size:140%; color:lightgreen; font-weight:bold;\'>{name}</span>'.format({name: streamer_name});
-            } else {
-                list1 = '<li class=\'even\' value={n}>'.format({n: i});
-                streamer_name = '<span style=\'font-size:140%; color:green; font-weight:bold;\'>{name}</span>'.format({name: streamer_name});
-            }
+            endtag = '</li></a>'
 
-            return '{opentag}{img1}{name} {viewers} - {title} {endtag}'.format({
-                        opentag: list1,
-                        img1: image,
+            html = '{opentag}{image}{name} {viewers} - {title} {endtag}'.format({
+                        opentag: opentag,
+                        image: image,
                         name: streamer_name,
                         title: title,
                         viewers: currentviewers,
-                        endtag: '</li>'
+                        endtag: endtag
                         });
+            return html;
         }
     }
 
     /* Reinjects HTML with the twitch embed pointing to the stream. */
-    function reloadVideoPlayer(streamer) {
+    function reloadVideoPlayer(streamername) {
         res = calcResolutions();
 
-        player = $('#videoplayer');
+        // Create the channel string based on chosen stream.
+        flashvars = 'channel={CHANNEL}&auto_play=true'.format({
+            CHANNEL: streamername});
 
         html =    ["<object bgcolor='#000000'",
                         "data='http://www.twitch.tv/widgets/archive_embed_player.swf'",
@@ -189,16 +185,22 @@
                         "<param name='allowScriptAccess' value='always' />",
                         "<param name='allowNetworking' value='all' />",
                         "<param name='allowFullScreen' value='true' />",
-                        "<param name='flashvars' value='{flashvars}'/>".format({flashvars: streamer}),
+                        "<param name='flashvars' value='{flashvars}'/>".format({flashvars: flashvars}),
                     "</object>"
                     ].join('');
 
-        player.html(html);
+        $('#videoplayer').html(html);
     }
 
-    /* Reinjects HTML with the twitch chat embed pointing to the stream. */
-    function reloadChatBox(src) {
+    /*
+     * Reinjects HTML with the twitch chat embed pointing to the stream.
+     */
+    function reloadChatBox(streamername) {
         res = calcResolutions();
+
+        // Change the chat to the corresponding video channel.
+        src = 'http://twitch.tv/chat/embed?channel={ch}&amp;popout_chat=true'.format({
+            ch: streamername});
 
         if (leftShow && !rightShow) { //Right is hidden so expand the videoplayer.
             $('#right').toggle();
@@ -206,20 +208,18 @@
             $('#toggleright').toggleClass('flaticon-right39 flaticon-arrowheads3');
         }
 
-        chatbox = $('#chatbox');
-
         html =    ['<iframe ',
                         'id=\'chat_embed\' ',
                         'frameborder=\'0\' ',
                         'scrolling=\'yes\' ',
-                        'src=\'{url}\' '.format({url: src}),
+                        'src=\'{src}\' '.format({src: src}),
                         'width=\'{w}\' '.format({w: res.rightW}),
                         'height=\'{h}\'>'.format({h: res.rightH}),
                     '</iframe>'].join('');
 
         applyResolutions();
 
-        chatbox.html(html);
+        $('#chatbox').html(html);
     }
 
     /*
@@ -234,9 +234,10 @@
             dataType: 'jsonp', // tell jQuery we're expecting JSONP.
 
             success: function( streams ) { // Process with the response.
-                // console.log(streams);
+                console.log(streams);
                 if(streams.follows) {
                     getOnlineFollowed(streams, function(results) {
+                        console.log(results);
                         callback( results );
                     });
                 }else{
@@ -248,7 +249,7 @@
 
     /*
      * Returns an array of streams that are online.
-     * See https://github.com/caolan/async for more details on async.js
+     * See https://github.com/caolan/async for more details on async.js.
      */
     function getOnlineFollowed(streams, callback) {
         var asyncTasks = [];
@@ -257,7 +258,7 @@
         streams.follows.forEach(function(stream) {
                 asyncTasks.push(
                     function(callback) {
-                        isStreamOnline(stream.channel.display_name, function(results) {
+                        isStreamOnline(stream.channel.name, function(results) {
                             callback(null, results);
                         });
                     }
@@ -273,7 +274,7 @@
 
     /*
      * Will check if stream is online.
-     * see https://github.com/justintv/Twitch-API/blob/master/v3_resources/streams.md to get an idea of how it works.
+     * see https://github.com/justintv/Twitch-API/blob/master/v3_resources/streams.md
      */
     function isStreamOnline(streamname, callback) {
         $.ajax({
@@ -284,6 +285,7 @@
             dataType: 'jsonp', // tell jQuery we're expecting JSONP.
 
             success: function( stream ) { // work with the response.
+                //console.log(stream);
                 if (stream.stream) {
                     callback(stream);
                 }else {
@@ -291,6 +293,11 @@
                 }
             }
         });
+    }
+
+    function loadStreamFromQuery(streamname) {
+        res = calcResolutions();
+
     }
 
     /*
@@ -407,7 +414,7 @@
 
         /* Header */
         $('#toggleright').css('margin-left', res.headerW-47); //Align image to far right properly.
-        $('#settings').css('margin-left', res.leftW -195);
+        $('#settings').css('margin-left', res.leftW -215);
         $('#refreshstreams').css('margin-left', res.leftW-42);
         $('#copyright').css('margin-left', res.headerW-180); //Align to far right properly.
         $('#multitwitchchat').css('margin-left', res.leftW); //Align after refresh stream properly.
@@ -474,6 +481,14 @@
 
     /* Main */
     $( document ).ready(function() {
+        /* Load stream from url querystring */
+        var streamer = getQueryStringParams('streamer');
+
+        if(streamer) {
+            reloadVideoPlayer(streamer);
+            reloadChatBox(streamer);
+        }
+
         loadStreams();
 
         applyResolutions(); // Apply panel resolutions based on current window sizes
@@ -493,6 +508,16 @@
         $('#settings').click(function() {
             $('#settingsmenu').toggle();
         })
+
+        //This allows fast switching of streams by changing the param in the videoplayer object,
+        $('#streams ul').click( function() {
+            data = $(this).text().split(' '); // Parse html with twitch name. data[0] or first item is the channel name. the rest of array not needed.
+
+            // Reinject the videoplayer with the new params pointing to the chosen stream.
+            reloadVideoPlayer(data[0]);
+            // Reinject the chat with the new params pointing to the chosen stream.
+            reloadChatBox(data[0]);
+        });
 
         setInterval(function() {
             loadStreams();
@@ -540,7 +565,8 @@
             <div id='header' class='unselectable'>
                 <div id='toggleleft'  style='position: relative; display:inline-block; margin: 0px 0px 0px 0px; cursor: pointer;' class='glyph flaticon-right39'></div>
 
-                <div id='settings' class='senlightfont unselectable' style='position: absolute; display:inline-block; cursor: pointer; margin: 3px 0px 0px 0px; font-size: medium;'>Settings</div>
+                <div id='settings' class='senlightfont unselectable' style='position: absolute; display:inline-block; cursor: pointer; margin-top: 1px; padding: 1px 10px 1px 10px; font-size: medium;
+                    border-radius: 4px; border-color: black; border: 1px solid; background-color: white; cursor: pointer;'>Settings</div>
 
                 <div id='copyright' class='senlightfont' style='position: absolute; display:inline-block; margin: 3px 0px 0px 0px; font-size: medium;'>&copy; 2014 takada</div>
 

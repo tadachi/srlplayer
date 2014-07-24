@@ -1,0 +1,5 @@
+Easy
+- Request all profile images at once instead of one at a time.
+DONE. - Put all streams into a selector box.
+DONE. - Allow open into new tab for each stream. 
+- Highlight selected stream.

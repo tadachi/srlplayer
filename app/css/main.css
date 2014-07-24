@@ -88,6 +88,11 @@ position: relative;
 display: inline-block;
 }
 
+#left a
+{
+text-decoration: none;
+}
+
 #left ul
 {
 padding:0;
@@ -115,19 +120,44 @@ overflow:hidden;
 #left li.even
 {
 color: black;
-background-color: white;
+background-color: #E8E8E8  ; /* lightergray */
 }
 
 #left li.odd
 {
-color: white;
-background-color: gray;
+color: black; /* lightblue */
+background-color: #F0F0F0; /* lightgray */
+}
+
+.eventitle
+{
+font-size: 140%;
+color: #336600; /* darkgreen */
+font-weight: bold;
+}
+
+.oddtitle
+{
+font-size: 140%;
+color: #336600; /* green */
+font-weight:bold;
+}
+
+.followed
+{
+font-size: 140%;
+color: #336600; /* green */
+font-weight:bold;
 }
 
 #left li.followed
 {
 color: black;
 background-color: #FDF5FD; /* verylightpink */
+}
+
+#left li:hover {
+background: #CCCCFF; /* lightyellow */
 }
 
 .unselectable {
