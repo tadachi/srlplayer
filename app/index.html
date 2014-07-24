@@ -39,6 +39,9 @@
      *   var blog = getQueryStringParams('blog');
      */
      function getQueryStringParams(sParam) {
+        if (sParam) {
+            return null;
+        }
         var sPageURL = window.location.href;
         var sURLVariables = sPageURL.split('/');
         var querystring;
@@ -51,8 +54,6 @@
                 querystring = sURLVariables[i].substring(1).split('&');
             }
         }
-
-        querystring.forEach(function(a){ count++; }); // Count number of elements in querystring.
 
         for (i = 0; i < querystring.length; i++) {
             arr = querystring[i].split('=');
