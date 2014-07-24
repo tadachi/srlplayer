@@ -39,9 +39,8 @@
      *   var blog = getQueryStringParams('blog');
      */
      function getQueryStringParams(sParam) {
-        if (sParam) {
-            return null;
-        }
+        console.log(sParam);
+
         var sPageURL = window.location.href;
         var sURLVariables = sPageURL.split('/');
         var querystring;
@@ -55,14 +54,17 @@
             }
         }
 
-        for (i = 0; i < querystring.length; i++) {
-            arr = querystring[i].split('=');
-            key = arr[0];
-            value = arr[1];
-            if (key == sParam) { // key mataches param.
-                return value;    // Return match.
+        if (querystring) {
+            for (i = 0; i < querystring.length; i++) {
+                arr = querystring[i].split('=');
+                key = arr[0];
+                value = arr[1];
+                if (key == sParam) { // key mataches param.
+                    return value;    // Return match.
+                }
             }
         }
+
         return null;
      }
     /*
@@ -122,20 +124,30 @@
             for (i = 0; i < streams[0].length; i++) {
                 if (streams[0][i]) { //Ignore null streams(offline) and add only streams that are online.
                     stream = streams[0][i].stream;
-                    // console.log(stream);
+
                     html += buildStreamSelectorHTML(stream.channel.name, stream.channel.logo, stream.channel.status, stream.viewers, true); // Build the html string with online streams.
                 }
             }
         }
 
         for (i = 0; i < streams[1].channels.length; i++ ) { // Populates the streams from a json file from speedrunslive.com.
-
             channel = streams[1].channels[i].channel; // streamer's channel unique name.
 
-            html += buildStreamSelectorHTML(channel.name, channel.image.size70, channel.title, channel.current_viewers, false); // Append html string with SRL streams.
+            html += buildStreamSelectorHTML(channel.display_name, channel.image.size70, channel.title, channel.current_viewers, false); // Append html string with SRL streams.
         }
 
         $('#streams ul').html(html); // Apply the combined html to this tag.
+
+        //This allows fast switching of streams by changing the param in the videoplayer object,
+        $('#streams ul li').click( function() {
+            data = $(this).text().split(' '); // Parse html with twitch name. data[0] or first item is the channel name. the rest of array not needed.
+            console.log(data[0]);
+            // Reinject the videoplayer with the new params pointing to the chosen stream.
+            reloadVideoPlayer(data[0]);
+            // Reinject the chat with the new params pointing to the chosen stream.
+            reloadChatBox(data[0]);
+        });
+
 
         function buildStreamSelectorHTML(streamer_name, image, title, current_viewers, followed) {
             if (followed) {
@@ -217,8 +229,6 @@
                         'width=\'{w}\' '.format({w: res.rightW}),
                         'height=\'{h}\'>'.format({h: res.rightH}),
                     '</iframe>'].join('');
-
-        applyResolutions();
 
         $('#chatbox').html(html);
     }
@@ -482,6 +492,7 @@
 
     /* Main */
     $( document ).ready(function() {
+
         /* Load stream from url querystring */
         var streamer = getQueryStringParams('streamer');
 
@@ -510,15 +521,7 @@
             $('#settingsmenu').toggle();
         })
 
-        //This allows fast switching of streams by changing the param in the videoplayer object,
-        $('#streams ul').click( function() {
-            data = $(this).text().split(' '); // Parse html with twitch name. data[0] or first item is the channel name. the rest of array not needed.
 
-            // Reinject the videoplayer with the new params pointing to the chosen stream.
-            reloadVideoPlayer(data[0]);
-            // Reinject the chat with the new params pointing to the chosen stream.
-            reloadChatBox(data[0]);
-        });
 
         setInterval(function() {
             loadStreams();
