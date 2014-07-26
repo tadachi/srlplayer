@@ -41,10 +41,10 @@
      function getQueryStringParams(sParam) {
         console.log(sParam);
 
-        var sPageURL = window.location.href;
+        var sPageURL      = window.location.href;
         var sURLVariables = sPageURL.split('/');
         var querystring;
-        var count = 0;
+        var count         = 0;
         var key;
         var value;
 
@@ -67,6 +67,7 @@
 
         return null;
      }
+
     /*
      * Ajax calls speedrunslive api and grabs json. Loads the json to a div through srlAndFollowedStreamTable().
      * Also can load followed streams that are online.
@@ -100,7 +101,6 @@
                     // work with the response
                     success: function( srlJson ) {
                         // console.log( response ); // server response
-                        //srlAndFollowedStreamTable( srlJson );
                         callback(null, srlJson);
                     }
                 });
@@ -139,7 +139,10 @@
         $('#streams ul').html(html); // Apply the combined html to this tag.
 
         //This allows fast switching of streams by changing the param in the videoplayer object,
-        $('#streams ul li').click( function() {
+        $('#streams ul li').click( function(e) {
+               if( e.which == 2 ) {
+                  e.preventDefault();
+               }
             data = $(this).text().split(' '); // Parse html with twitch name. data[0] or first item is the channel name. the rest of array not needed.
             console.log(data[0]);
             // Reinject the videoplayer with the new params pointing to the chosen stream.
@@ -162,22 +165,146 @@
                 streamer_name = '<span class=\'eventitle\'>{streamer}</span>'.format({streamer: streamer_name});
             }
 
-            image = '<img width=60 height=60 align=\'left\' src=\'{logo}\' alt=min>'.format({logo: image}); // Streamer's logo
+            image          = '<img width=60 height=60 align=\'left\' src=\'{logo}\' alt=min>'.format({logo: image}); // Streamer's logo
 
             currentviewers = '<span style=\'color: red;\'>{viewercount}</span>'.format({viewercount: current_viewers}); // Number of viewers.
 
             endtag = '</li></a>'
 
             html = '{opentag}{image}{name} {viewers} - {title} {endtag}'.format({
-                        opentag: opentag,
-                        image: image,
-                        name: streamer_name,
-                        title: title,
-                        viewers: currentviewers,
-                        endtag: endtag
+                        opentag : opentag,
+                        image   : image,
+                        name    : streamer_name,
+                        title   : title,
+                        viewers : currentviewers,
+                        endtag  : endtag
                         });
             return html;
         }
+    }
+
+    /*
+     * Searches Those you follow that are online.
+     */
+    function getOnlineFollowedStreams(name, callback) {
+        var asyncTasks = [];
+        var offset     = 0; // get the next 25 people if you follow more than 25 people so increase offset by 25.
+        var limit      = 100;
+        $.ajax({
+            url: 'https://api.twitch.tv/kraken/users/{name}/follows/channels?direction=DESC&limit={limit}&offset={offset}&sortby=created_at'.format({ name: name, limit: limit, offset: offset }),
+            jsonp: 'callback',
+            dataType: 'jsonp', // tell jQuery we're expecting JSONP.
+
+            success: function(streams) {
+                if(streams.follows) {
+                    getOnlineFollowed(streams, function(results) {
+                        callback( results );
+                    });
+                }else{
+                    callback(null);
+                }
+
+                // asyncTasks.push( // Add to tasks the first 25 followed streams.
+                //     function(callback) {
+                //         if(streams.follows) {
+                //             getOnlineFollowed(streams, function(results) {
+                //                 callback( results );
+                //             });
+                //         }else{
+                //             callback(null);
+                //         }
+                //     }
+                // );
+
+                console.log(streams);
+                // while (offset < streams._total) {
+                //     console.log(offset);
+                //     asyncTasks.push(
+                //         function(callback) {
+                //             getOnlineFollowedStreamsNext(name, limit, offset, function(results) {
+                //                 callback(results);
+                //             });
+                //         }
+                //     );
+                //     offset += limit
+                // }
+                //
+                // // async.parallel will run all tasks at the same time.
+                // async.parallel( asyncTasks,
+                // function(err, results) { // Each task will push their callbacks into an array.
+                //     callback(results);
+                // });
+
+            }
+        });
+    }
+
+    // function getOnlineFollowedStreamsNext(name, limit, offset, callback) {
+    //     console.log('https://api.twitch.tv/kraken/users/{name}/follows/channels?direction=DESC&limit={limit}&offset={offset}&sortby=created_at'.format({ name: name, limit: limit, offset: offset }));
+    //     $.ajax({
+    //         url: 'https://api.twitch.tv/kraken/users/{name}/follows/channels?direction=DESC&limit={limit}&offset={offset}&sortby=created_at'.format({ name: name, limit: limit, offset: offset }),
+    //         jsonp: 'callback',
+    //         dataType: 'jsonp', // tell jQuery we're expecting JSONP.
+    //
+    //         success: function (streams) {
+    //             if(streams.follows) {
+    //                 getOnlineFollowed(streams, function(results) {
+    //                     console.log(results);
+    //                     callback( results );
+    //                 });
+    //             }else{
+    //                 callback(null);
+    //             }
+    //         }
+    //     });
+    // }
+
+    /*
+     * Returns an array of streams that are online.
+     * See https://github.com/caolan/async for more details on async.js.
+     */
+    function getOnlineFollowed(streams, callback) {
+        var asyncTasks = [];
+
+        // Array of streams to see if online.
+        streams.follows.forEach(function(stream) {
+                asyncTasks.push(
+                    function(callback) {
+                        isStreamOnline(stream.channel.name, function(results) {
+                            callback(null, results);
+                        });
+                    }
+                );
+        });
+
+        // async.parallel will run all tasks at the same time.
+        async.parallel( asyncTasks,
+        function(err, results) { // Each task will push their callbacks into an array.
+            callback(results);
+        });
+    }
+
+    /*
+     * Will check if stream is online.
+     * see https://github.com/justintv/Twitch-API/blob/master/v3_resources/streams.md
+     */
+    function isStreamOnline(streamname, callback) {
+        $.ajax({
+            url: 'https://api.twitch.tv/kraken/streams/' + streamname,
+
+            jsonp: 'callback',
+
+            dataType: 'jsonp', // tell jQuery we're expecting JSONP.
+
+            success: function( stream ) { // work with the response.
+                //console.log(stream);
+                if (stream.stream) {
+                    callback(stream);
+                }else {
+                    callback(null);
+                }
+            }
+        });
     }
 
     /* Reinjects HTML with the twitch embed pointing to the stream. */
@@ -233,116 +360,40 @@
         $('#chatbox').html(html);
     }
 
-    /*
-     * Searches Those you follow that are online.
-     */
-    function getOnlineFollowedStreams(name, callback) {
-        $.ajax({
-            url: 'https://api.twitch.tv/kraken/users/{name}/follows/channels'.format({name: name}),
 
-            jsonp: 'callback',
-
-            dataType: 'jsonp', // tell jQuery we're expecting JSONP.
-
-            success: function( streams ) { // Process with the response.
-                console.log(streams);
-                if(streams.follows) {
-                    getOnlineFollowed(streams, function(results) {
-                        console.log(results);
-                        callback( results );
-                    });
-                }else{
-                    callback(null);
-                }
-            }
-        });
-    }
-
-    /*
-     * Returns an array of streams that are online.
-     * See https://github.com/caolan/async for more details on async.js.
-     */
-    function getOnlineFollowed(streams, callback) {
-        var asyncTasks = [];
-
-        // Array of streams to see if online.
-        streams.follows.forEach(function(stream) {
-                asyncTasks.push(
-                    function(callback) {
-                        isStreamOnline(stream.channel.name, function(results) {
-                            callback(null, results);
-                        });
-                    }
-                );
-        });
-
-        // async.parallel will run all tasks at the same time.
-        async.parallel( asyncTasks,
-        function(err, results) { // Each task will push their callbacks into an array.
-            callback(results);
-        });
-    }
-
-    /*
-     * Will check if stream is online.
-     * see https://github.com/justintv/Twitch-API/blob/master/v3_resources/streams.md
-     */
-    function isStreamOnline(streamname, callback) {
-        $.ajax({
-            url: 'https://api.twitch.tv/kraken/streams/' + streamname,
-
-            jsonp: 'callback',
-
-            dataType: 'jsonp', // tell jQuery we're expecting JSONP.
-
-            success: function( stream ) { // work with the response.
-                //console.log(stream);
-                if (stream.stream) {
-                    callback(stream);
-                }else {
-                    callback(null);
-                }
-            }
-        });
-    }
-
-    function loadStreamFromQuery(streamname) {
-        res = calcResolutions();
-
-    }
 
     /*
      * Creates and returns an object that has resolutions for 3 panels. left, center and right.
      */
     function calcResolutions() {
-        hOffset = 26; //Height for our header
-        currWinWidth = $(window).width();
-        currWinHeight = $(window).height();
+        hOffset               = 26; //Height for our header
+        currWinWidth          = $(window).width();
+        currWinHeight         = $(window).height();
 
-        headerPanelWidth = Math.floor(currWinWidth);
-        headerPanelHeight = Math.floor(hOffset);
+        headerPanelWidth      = Math.floor(currWinWidth);
+        headerPanelHeight     = Math.floor(hOffset);
 
-        containerWidth = (currWinWidth);
-        containerHeight = (currWinHeight);
+        containerWidth        = (currWinWidth);
+        containerHeight       = (currWinHeight);
 
-        leftPanelWidth = Math.ceil( limitTo(261, (0.14 * currWinWidth)) );
-        leftPanelHeight = Math.floor(currWinHeight - hOffset);
+        leftPanelWidth        = Math.ceil( limitTo(261, (0.14 * currWinWidth)) );
+        leftPanelHeight       = Math.floor(currWinHeight - hOffset);
 
-        settingsMenuWidth = Math.ceil(0.14 * currWinWidth);
-        settingsMenuHeight = Math.floor(500);
+        settingsMenuWidth     = Math.ceil(0.14 * currWinWidth);
+        settingsMenuHeight    = Math.floor(500);
 
-        rightPanelWidth = Math.floor(0.18 * currWinWidth);
-        rightPanelHeight = Math.floor(currWinHeight - hOffset);
+        rightPanelWidth       = Math.floor(0.18 * currWinWidth);
+        rightPanelHeight      = Math.floor(currWinHeight - hOffset);
 
-        centerPanelWidth = Math.floor(0.68 * currWinWidth);
-        centerPanelHeight = Math.floor(currWinHeight - hOffset);
+        centerPanelWidth      = Math.floor(0.68 * currWinWidth);
+        centerPanelHeight     = Math.floor(currWinHeight - hOffset);
 
-        leftPlusCenterWidth = Math.floor(0.82 * currWinWidth);
-        leftPlusCenterHeight = Math.floor(currWinHeight - hOffset);
-        rightPlusCenterWidth = Math.floor(0.86 * currWinWidth);
+        leftPlusCenterWidth   = Math.floor(0.82 * currWinWidth);
+        leftPlusCenterHeight  = Math.floor(currWinHeight - hOffset);
+        rightPlusCenterWidth  = Math.floor(0.86 * currWinWidth);
         rightPlusCenterHeight = Math.floor(currWinHeight - hOffset);
-        centerOnlyWidth = Math.floor(currWinWidth);
-        centerOnlyHeight = Math.floor(currWinHeight - hOffset);
+        centerOnlyWidth       = Math.floor(currWinWidth);
+        centerOnlyHeight      = Math.floor(currWinHeight - hOffset);
 
         return {
                 containerW: containerWidth, containerH: containerHeight,
@@ -567,7 +618,7 @@
             </div>
 
             <div id='header' class='unselectable'>
-                <div id='toggleleft'  style='position: relative; display:inline-block; margin: 0px 0px 0px 0px; cursor: pointer;' class='glyph flaticon-right39'></div>
+                <div id='toggleleft' style='position: relative; display:inline-block; margin: 0px 0px 0px 0px; cursor: pointer;' class='glyph flaticon-right39'></div>
 
                 <div id='settings' class='senlightfont unselectable' style='position: absolute; display:inline-block; cursor: pointer; margin-top: 1px; padding: 1px 10px 1px 10px; font-size: medium;
                     border-radius: 4px; border-color: black; border: 1px solid; background-color: white; cursor: pointer;'>Settings</div>

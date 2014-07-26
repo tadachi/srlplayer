@@ -145,13 +145,6 @@ font-weight:bold;
 
 .followed
 {
-font-size: 140%;
-color: #336600; /* green */
-font-weight:bold;
-}
-
-#left li.followed
-{
 color: black;
 background-color: #FDF5FD; /* verylightpink */
 }
