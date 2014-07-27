@@ -27,18 +27,7 @@ home.use('/img', express.static(__dirname + '/app/img'));
 home.use('/test', express.static(__dirname + '/app/test'));
 
 home.set('jsonp callback', true);
-/* Testing headers with new implementation of srlplayer
-home.use(function (req, res, next) {
-    // Website you wish to allow to connect
-    res.setHeader('Access-Control-Allow-Origin', '*');
 
-    // Request methods you wish to allow
-    res.setHeader('Access-Control-Allow-Methods', 'GET');
-
-    // Pass to next layer of middleware
-    next();
-});
-*/
 var hostname = 'srl.tak.com';
 app.use(vhost(hostname, home));
 

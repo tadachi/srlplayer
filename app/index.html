@@ -84,7 +84,7 @@
 
         async.parallel([
             function (callback) {
-                getOnlineFollowedStreams(twitchusername, function(results) {
+                getAllFollowedStreams(twitchusername, function(results) {
                     callback(null, results);
                 });
             },
@@ -140,9 +140,9 @@
 
         //This allows fast switching of streams by changing the param in the videoplayer object,
         $('#streams ul li').click( function(e) {
-               if( e.which == 2 ) {
-                  e.preventDefault();
-               }
+            if( e.which == 2 ) { //prevent middle click
+                e.preventDefault();
+            }
             data = $(this).text().split(' '); // Parse html with twitch name. data[0] or first item is the channel name. the rest of array not needed.
             console.log(data[0]);
             // Reinject the videoplayer with the new params pointing to the chosen stream.
@@ -186,7 +186,7 @@
     /*
      * Searches Those you follow that are online.
      */
-    function getOnlineFollowedStreams(name, callback) {
+    function getAllFollowedStreams(name, callback) {
         var asyncTasks = [];
         var offset     = 0; // get the next 25 people if you follow more than 25 people so increase offset by 25.
         var limit      = 100;
@@ -197,73 +197,21 @@
 
             success: function(streams) {
                 if(streams.follows) {
-                    getOnlineFollowed(streams, function(results) {
+                    getOnlyOnlineFollowed(streams, function(results) {
                         callback( results );
                     });
                 }else{
                     callback(null);
                 }
-
-                // asyncTasks.push( // Add to tasks the first 25 followed streams.
-                //     function(callback) {
-                //         if(streams.follows) {
-                //             getOnlineFollowed(streams, function(results) {
-                //                 callback( results );
-                //             });
-                //         }else{
-                //             callback(null);
-                //         }
-                //     }
-                // );
-
-                console.log(streams);
-                // while (offset < streams._total) {
-                //     console.log(offset);
-                //     asyncTasks.push(
-                //         function(callback) {
-                //             getOnlineFollowedStreamsNext(name, limit, offset, function(results) {
-                //                 callback(results);
-                //             });
-                //         }
-                //     );
-                //     offset += limit
-                // }
-                //
-                // // async.parallel will run all tasks at the same time.
-                // async.parallel( asyncTasks,
-                // function(err, results) { // Each task will push their callbacks into an array.
-                //     callback(results);
-                // });
-
             }
         });
     }
-
-    // function getOnlineFollowedStreamsNext(name, limit, offset, callback) {
-    //     console.log('https://api.twitch.tv/kraken/users/{name}/follows/channels?direction=DESC&limit={limit}&offset={offset}&sortby=created_at'.format({ name: name, limit: limit, offset: offset }));
-    //     $.ajax({
-    //         url: 'https://api.twitch.tv/kraken/users/{name}/follows/channels?direction=DESC&limit={limit}&offset={offset}&sortby=created_at'.format({ name: name, limit: limit, offset: offset }),
-    //         jsonp: 'callback',
-    //         dataType: 'jsonp', // tell jQuery we're expecting JSONP.
-    //
-    //         success: function (streams) {
-    //             if(streams.follows) {
-    //                 getOnlineFollowed(streams, function(results) {
-    //                     console.log(results);
-    //                     callback( results );
-    //                 });
-    //             }else{
-    //                 callback(null);
-    //             }
-    //         }
-    //     });
-    // }
 
     /*
      * Returns an array of streams that are online.
      * See https://github.com/caolan/async for more details on async.js.
      */
-    function getOnlineFollowed(streams, callback) {
+    function getOnlyOnlineFollowed(streams, callback) {
         var asyncTasks = [];
 
         // Array of streams to see if online.
@@ -376,19 +324,19 @@
         containerWidth        = (currWinWidth);
         containerHeight       = (currWinHeight);
 
-        leftPanelWidth        = Math.ceil( limitTo(261, (0.14 * currWinWidth)) );
+        leftPanelWidth        = Math.ceil( (0.14 * currWinWidth) );
         leftPanelHeight       = Math.floor(currWinHeight - hOffset);
 
         settingsMenuWidth     = Math.ceil(0.14 * currWinWidth);
         settingsMenuHeight    = Math.floor(500);
 
-        rightPanelWidth       = Math.floor(0.18 * currWinWidth);
+        rightPanelWidth       = Math.floor( (0.18 * currWinWidth) );
         rightPanelHeight      = Math.floor(currWinHeight - hOffset);
 
-        centerPanelWidth      = Math.floor(0.68 * currWinWidth);
+        centerPanelWidth      = Math.floor( (0.68 * currWinWidth) );
         centerPanelHeight     = Math.floor(currWinHeight - hOffset);
-
-        leftPlusCenterWidth   = Math.floor(0.82 * currWinWidth);
+        console.log(centerPanelWidth);
+        leftPlusCenterWidth   = Math.ceil(0.82 * currWinWidth);
         leftPlusCenterHeight  = Math.floor(currWinHeight - hOffset);
         rightPlusCenterWidth  = Math.floor(0.86 * currWinWidth);
         rightPlusCenterHeight = Math.floor(currWinHeight - hOffset);
@@ -411,6 +359,7 @@
 
     function limitTo(limit, current) {
         if (current <= limit) {
+            //console.log(limit);
             return limit;
         }
         return current;
@@ -421,6 +370,7 @@
      */
     function applyResolutions() {
         res = calcResolutions();
+
         verticalScrollbarWidth = 17;
 
         $('#container').css('width', res.containerW);
@@ -571,8 +521,6 @@
         $('#settings').click(function() {
             $('#settingsmenu').toggle();
         })
-
-
 
         setInterval(function() {
             loadStreams();
