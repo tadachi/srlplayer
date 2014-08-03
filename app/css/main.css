@@ -2,6 +2,9 @@ body
 {
 font-size: 0;
 margin: 0;
+scroll: hidden;
+overflow-y: hidden;
+overflow-x: hidden;
 }
 
 #container
@@ -12,6 +15,7 @@ font-size: 0;
 
 scroll: hidden;
 overflow-y: hidden;
+overflow-x: hidden;
 
 background-color: black;
 
@@ -30,7 +34,6 @@ font-family: Tahoma, Geneva, sans-serif;
 
 position: absolute;
 display: none;
-
 }
 
 #header
@@ -63,12 +66,29 @@ position:relative;
 display:inline-block;
 }
 
+#leftmini
+{
+z-index: 1;
+
+-webkit-font-smoothing: antialiased;
+font-size: medium;
+
+background-color: darkgray;
+color: white;
+font-family: Tahoma, Geneva, sans-serif;
+
+overflow:scroll;
+overflow-x:hidden;
+
+position:relative;
+display:inline-block;
+}
+
 #center
 {
 z-index: 1;
 
 font-size: medium;
-
 background-color: gray;
 
 position: relative;
@@ -146,7 +166,7 @@ font-weight:bold;
 .followed
 {
 color: black;
-background-color: #FDF5FD; /* verylightpink */
+background-color: #FFF5FD; /* verylightpink */
 }
 
 #left li:hover {

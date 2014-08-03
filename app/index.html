@@ -9,10 +9,8 @@
     <link rel='stylesheet' href='css/main.css'>
 
     <script src='js/jquery-2.1.1.min.js'></script>
-    <!--<script src='js/jquery-2.0.3.min.js'></script>-->
     <script src='js/jquery.typing-0.2.0.min.js'></script>
-    <script src='js/async.min.js'></script>
-    <!--<script src='js/simple-storage.min.js'></script>-->
+    <script src='js/async.min.js'></script> <!-- Combined with Jquery, it's used together for asynchronous REST calls. -->
 
     <script>
     /*
@@ -39,8 +37,6 @@
      *   var blog = getQueryStringParams('blog');
      */
      function getQueryStringParams(sParam) {
-        console.log(sParam);
-
         var sPageURL      = window.location.href;
         var sURLVariables = sPageURL.split('/');
         var querystring;
@@ -257,7 +253,7 @@
 
     /* Reinjects HTML with the twitch embed pointing to the stream. */
     function reloadVideoPlayer(streamername) {
-        res = calcResolutions();
+        center = calcCenter();
 
         // Create the channel string based on chosen stream.
         flashvars = 'channel={CHANNEL}&auto_play=true'.format({
@@ -267,8 +263,8 @@
                         "data='http://www.twitch.tv/widgets/archive_embed_player.swf'",
                         "id='videoplayerembed'",
                         "type='application/x-shockwave-flash'",
-                        "width='{w}'".format({ w: res.centerW }),
-                        "height='{h}'>".format({ h: res.centerH }),
+                        "width='{w}'".format({ w: center.w }),
+                        "height='{h}'>".format({ h: center.h }),
                         "<param name='movie' value='http://www.twitch.tv/widgets/archive_embed_player.swf' />",
                         "<param name='allowScriptAccess' value='always' />",
                         "<param name='allowNetworking' value='all' />",
@@ -284,25 +280,19 @@
      * Reinjects HTML with the twitch chat embed pointing to the stream.
      */
     function reloadChatBox(streamername) {
-        res = calcResolutions();
+        right = calcRight();
 
         // Change the chat to the corresponding video channel.
         src = 'http://twitch.tv/chat/embed?channel={ch}&amp;popout_chat=true'.format({
             ch: streamername});
-
-        if (leftShow && !rightShow) { //Right is hidden so expand the videoplayer.
-            $('#right').toggle();
-            rightShow = !rightShow;
-            $('#toggleright').toggleClass('flaticon-right39 flaticon-arrowheads3');
-        }
 
         html =    ['<iframe ',
                         'id=\'chat_embed\' ',
                         'frameborder=\'0\' ',
                         'scrolling=\'yes\' ',
                         'src=\'{src}\' '.format({src: src}),
-                        'width=\'{w}\' '.format({w: res.rightW}),
-                        'height=\'{h}\'>'.format({h: res.rightH}),
+                        'width=\'{w}\' '.format({w: right.w}),
+                        'height=\'{h}\'>'.format({h: right.h}),
                     '</iframe>'].join('');
 
         $('#chatbox').html(html);
@@ -313,48 +303,51 @@
     /*
      * Creates and returns an object that has resolutions for 3 panels. left, center and right.
      */
-    function calcResolutions() {
-        hOffset               = 26; //Height for our header
-        currWinWidth          = $(window).width();
-        currWinHeight         = $(window).height();
-
-        headerPanelWidth      = Math.floor(currWinWidth);
-        headerPanelHeight     = Math.floor(hOffset);
-
-        containerWidth        = (currWinWidth);
-        containerHeight       = (currWinHeight);
-
-        leftPanelWidth        = Math.ceil( (0.14 * currWinWidth) );
-        leftPanelHeight       = Math.floor(currWinHeight - hOffset);
-
-        settingsMenuWidth     = Math.ceil(0.14 * currWinWidth);
-        settingsMenuHeight    = Math.floor(500);
-
-        rightPanelWidth       = Math.floor( (0.18 * currWinWidth) );
-        rightPanelHeight      = Math.floor(currWinHeight - hOffset);
-
-        centerPanelWidth      = Math.floor( (0.68 * currWinWidth) );
-        centerPanelHeight     = Math.floor(currWinHeight - hOffset);
-        console.log(centerPanelWidth);
-        leftPlusCenterWidth   = Math.ceil(0.82 * currWinWidth);
-        leftPlusCenterHeight  = Math.floor(currWinHeight - hOffset);
-        rightPlusCenterWidth  = Math.floor(0.86 * currWinWidth);
-        rightPlusCenterHeight = Math.floor(currWinHeight - hOffset);
-        centerOnlyWidth       = Math.floor(currWinWidth);
-        centerOnlyHeight      = Math.floor(currWinHeight - hOffset);
+    function calcContainer() {
+        containerWidth = $(window).width();
+        containerHeight = $(window).height();
 
         return {
-                containerW: containerWidth, containerH: containerHeight,
-                headerW: headerPanelWidth, headerH: headerPanelHeight,
-                leftW: leftPanelWidth, leftH: leftPanelHeight,
-                rightW: rightPanelWidth, rightH: rightPanelHeight,
-                centerW: centerPanelWidth, centerH: centerPanelHeight,
-                leftCenterW: leftPlusCenterWidth, leftCenterH: leftPlusCenterHeight,
-                rightCenterW: rightPlusCenterWidth, rightCenterH: rightPlusCenterHeight,
-                centerOnlyW: centerOnlyWidth, centerOnlyH: centerOnlyHeight,
-                settingMenuW: settingsMenuWidth, settingsMenuH: settingsMenuHeight
-                };
+            w: containerWidth, h: containerHeight
+        };
 
+    }
+
+    function calcCenter() {
+        left = calcLeft();
+        right = calcRight();
+
+        centerWidth = $(window).width() - left.w - right.w;
+        centerHeight = $(window).height();
+
+        return {
+            w: centerWidth, h: centerHeight
+        };
+    }
+
+    function calcHeader() {
+        headerWidth          = $(window).width();
+        headerHeight         = 27;
+
+        return {
+            w: headerWidth, h: headerHeight
+        };
+    }
+
+    function calcLeft() {
+        width          = 300;
+        height         = $(window).height();
+        return {
+            w: width, h: height
+        };
+    }
+
+    function calcRight() {
+        width          = 300;
+        height         = $(window).height();
+        return {
+            w: width, h: height
+        };
     }
 
     function limitTo(limit, current) {
@@ -369,119 +362,112 @@
      * Apply panel resolutions based on current window sizes to various divs
      */
     function applyResolutions() {
-        res = calcResolutions();
+        container = calcContainer();
+        center = calcCenter();
+        left = calcLeft();
+        right = calcRight();
+        header = calcHeader();
 
-        verticalScrollbarWidth = 17;
+        $('#container').css('width', container.w);
+        $('#container').css('height', container.h);
 
-        $('#container').css('width', res.containerW);
-        $('#container').css('height', res.containerH);
+        $('#center').css('width', container.w - left.w - right.w);
+        $('#center').css('height', center.h);
 
-        $('#header').css('width',res.headerW);
-        $('#header').css('height',res.headerH);
+        $('#videoplayerembed').css('width', container.w - left.w - right.w);
+        $('#videoplayerembed').css('height', center.h);
 
-        // $('#left ul').css('width', res.leftW - verticalScrollbarWidth);
-        // $('#left ul li').css('width', res.leftW - verticalScrollbarWidth);
+        $('#header').css('width', header.w);
+        $('#header').css('height', header.h);
 
-        $('#settingsmenu').css('width', res.leftW);
+        $('#settingsmenu').css('width', left.w);
         $('#settingsmenu').css('height', 500);
-        $('#settingsmenu').css('margin-top', headerPanelHeight);
+        $('#settingsmenu').css('margin-top', header.h);
 
-        if (leftShow) {
-            $('#left').css('width', res.leftW);
-            $('#left').css('height', res.leftH);
+        $('#left').css('width', left.w);
+        $('#left').css('height', left.h);
+
+        $('#right').css('width', right.w);
+        $('#right').css('height', right.h);
+
+        if (leftShow && !rightShow) { //Right is hidden so expand the videoplayer.
+            $('#center').css('width', (center.w + right.w));
+            $('#videoplayerembed').css('width', (center.w + right.w));
         }
-        if (rightShow) {
-            $('#right').css('width', res.rightW);
-            $('#right').css('height', res.rightH);
+        if (!leftShow && rightShow) { //Left is hidden so expand the videoplayer.
+            $('#center').css('width', (center.w + left.w));
+            $('#videoplayerembed').css('width', (center.w + left.w));
         }
-        if (!leftShow && rightShow) {
-            $('#center').css('width', res.leftCenterW);
-            $('#center').css('height', res.leftCenterH);
-            $('#videoplayerembed').css('width', res.leftCenterW);
-            $('#videoplayerembed').css('height', res.leftCenterH);
-        }else if (leftShow && !rightShow) {
-            $('#center').css('width', res.rightCenterW);
-            $('#center').css('height', res.rightCenterH);
-            $('#videoplayerembed').css('width', res.rightCenterW);
-            $('#videoplayerembed').css('height', res.rightCenterH);
-        }else if ( (!leftShow && !rightShow) ) {
-            $('#center').css('width', res.centerOnlyW);
-            $('#center').css('height', res.centerOnlyH);
-            $('#videoplayerembed').css('width', res.centerOnlyW);
-            $('#videoplayerembed').css('height', res.centerOnlyH);
-        }else if (leftShow && !rightShow) {
-            $('#center').css('width', res.rightCenterW);
-            $('#center').css('height', res.rightCenterH);
-            $('#videoplayerembed').css('width', res.rightCenterW);
-            $('#videoplayerembed').css('height', res.rightCenterH);
-        }else {
-            $('#center').css('width', res.centerW);
-            $('#center').css('height', res.centerH);
-            $('#videoplayerembed').css('width', res.centerW);
-            $('#videoplayerembed').css('height', res.centerH);
+        if ( (!leftShow && !rightShow) ) { //Both left and right are hidden so maximize videoplayer.
+            $('#center').css('width', container.w);
+            $('#videoplayerembed').css('width', container.w);
+        }
+        if (leftShow && rightShow) {
+            $('#right').css('width', right.w);
+            $('#right').css('height', right.h);
+            $('#left').css('width', left.w);
+            $('#left').css('height', left.h);
         }
 
-        $('#chat_embed').css('width', res.rightW);
-        $('#chat_embed').css('height', res.rightH);
+        $('#chat_embed').css('width', right.w);
+        $('#chat_embed').css('height', right.h);
 
         /* Header */
-        $('#toggleright').css('margin-left', res.headerW-47); //Align image to far right properly.
-        $('#settings').css('margin-left', res.leftW -215);
-        $('#refreshstreams').css('margin-left', res.leftW-42);
-        $('#copyright').css('margin-left', res.headerW-180); //Align to far right properly.
-        $('#multitwitchchat').css('margin-left', res.leftW); //Align after refresh stream properly.
+        $('#toggleright').css('margin-left', header.w-47); //Align image to far right properly.
+        $('#settings').css('margin-left', left.w-215);
+        $('#refreshstreams').css('margin-left', left.w-42);
+        $('#copyright').css('margin-left', header.w-180); //Align to far right properly.
+        $('#multitwitchchat').css('margin-left', left.w); //Align after refresh stream properly.
     }
 
     function toggleLeft() {
+        container = calcContainer();
+        center = calcCenter();
+        left = calcLeft();
+        right = calcRight();
+
         $('#left').toggle(); // Toggle show/hide
         leftShow = !leftShow; // Toggle the boolean.
         $('#toggleleft').toggleClass('flaticon-arrowheads3 flaticon-right39'); //Toggle where the icon points to.
 
+        if (leftShow && !rightShow) { //Right is hidden so expand the videoplayer.
+            $('#center').css('width', (center.w + right.w));
+            $('#videoplayerembed').css('width', (center.w + right.w));
+        }
         if (!leftShow && rightShow) { //Left is hidden so expand the videoplayer.
-            $('#center').css('width', res.leftCenterW);
-            $('#center').css('height', res.leftCenterH);
-            $('#videoplayerembed').css('width', res.leftCenterW);
-            $('#videoplayerembed').css('height', res.leftCenterH);
+            $('#center').css('width', (center.w + left.w));
+            $('#videoplayerembed').css('width', (center.w + left.w));
         }
         if ( (!leftShow && !rightShow) ) { //Both left and right are hidden so maximize videoplayer.
-            $('#center').css('width', res.centerOnlyW);
-            $('#center').css('height', res.centerOnlyH);
-            $('#videoplayerembed').css('width', res.centerOnlyW);
-            $('#videoplayerembed').css('height', res.centerOnlyH);
+            $('#center').css('width', container.w);
+            $('#videoplayerembed').css('width', container.w);
         }
-        if (leftShow && !rightShow) { //Right is hidden so expand the videoplayer.
-            $('#center').css('width', res.rightCenterW);
-            $('#center').css('height', res.rightCenterH);
-            $('#videoplayerembed').css('width', res.rightCenterW);
-            $('#videoplayerembed').css('height', res.rightCenterH);
-        }
-        if ( leftShow && rightShow) {
+        if (leftShow && rightShow) {
             applyResolutions();
         }
     }
 
     function toggleRight() {
+        container = calcContainer();
+        center = calcCenter();
+        left = calcLeft();
+        right = calcRight();
+
         $('#right').toggle();
         rightShow = !rightShow;
         $('#toggleright').toggleClass('flaticon-right39 flaticon-arrowheads3');
 
         if (leftShow && !rightShow) { //Right is hidden so expand the videoplayer.
-            $('#center').css('width', res.rightCenterW);
-            $('#center').css('height', res.rightCenterH);
-            $('#videoplayerembed').css('width', res.rightCenterW);
-            $('#videoplayerembed').css('height', res.rightCenterH);
-        }
-        if ( (!leftShow && !rightShow) ) { //Both left and right are hidden so maximize videoplayer.
-            $('#center').css('width', res.centerOnlyW);
-            $('#center').css('height', res.centerOnlyH);
-            $('#videoplayerembed').css('width', res.centerOnlyW);
-            $('#videoplayerembed').css('height', res.centerOnlyH);
+            $('#center').css('width', (center.w + right.w));
+            $('#videoplayerembed').css('width', (center.w + right.w));
         }
         if (!leftShow && rightShow) { //Left is hidden so expand the videoplayer.
-            $('#center').css('width', res.leftCenterW);
-            $('#center').css('height', res.leftCenterH);
-            $('#videoplayerembed').css('width', res.leftCenterW);
-            $('#videoplayerembed').css('height', res.leftCenterH);
+            $('#center').css('width', (center.w + left.w));
+            $('#videoplayerembed').css('width', (center.w + left.w));
+        }
+        if ( (!leftShow && !rightShow) ) { //Both left and right are hidden so maximize videoplayer.
+            $('#center').css('width', container.w);
+            $('#videoplayerembed').css('width', container.w);
         }
         if (leftShow && rightShow) {
             applyResolutions();
@@ -493,7 +479,6 @@
 
     /* Main */
     $( document ).ready(function() {
-
         /* Load stream from url querystring */
         var streamer = getQueryStringParams('streamer');
 
