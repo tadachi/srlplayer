@@ -273,7 +273,7 @@
                     "</object>"
                     ].join('');
 
-        $('#videoplayer').html(html);
+        $('#center').html(html);
     }
 
     /*
@@ -316,9 +316,10 @@
     function calcCenter() {
         left = calcLeft();
         right = calcRight();
+        header = calcHeader();
 
         centerWidth = $(window).width() - left.w - right.w;
-        centerHeight = $(window).height();
+        centerHeight = $(window).height() - header.h;
 
         return {
             w: centerWidth, h: centerHeight
@@ -335,16 +336,22 @@
     }
 
     function calcLeft() {
+        header = calcHeader();
+
         width          = 300;
-        height         = $(window).height();
+        height         = $(window).height() - header.h;
+
         return {
             w: width, h: height
         };
     }
 
     function calcRight() {
+        header = calcHeader();
+
         width          = 300;
-        height         = $(window).height();
+        height         = $(window).height() - header.h;
+
         return {
             w: width, h: height
         };
@@ -384,24 +391,8 @@
         $('#settingsmenu').css('height', 500);
         $('#settingsmenu').css('margin-top', header.h);
 
-        $('#left').css('width', left.w);
-        $('#left').css('height', left.h);
+        maximizeVideoPlayerResolution();
 
-        $('#right').css('width', right.w);
-        $('#right').css('height', right.h);
-
-        if (leftShow && !rightShow) { //Right is hidden so expand the videoplayer.
-            $('#center').css('width', (center.w + right.w));
-            $('#videoplayerembed').css('width', (center.w + right.w));
-        }
-        if (!leftShow && rightShow) { //Left is hidden so expand the videoplayer.
-            $('#center').css('width', (center.w + left.w));
-            $('#videoplayerembed').css('width', (center.w + left.w));
-        }
-        if ( (!leftShow && !rightShow) ) { //Both left and right are hidden so maximize videoplayer.
-            $('#center').css('width', container.w);
-            $('#videoplayerembed').css('width', container.w);
-        }
         if (leftShow && rightShow) {
             $('#right').css('width', right.w);
             $('#right').css('height', right.h);
@@ -430,18 +421,8 @@
         leftShow = !leftShow; // Toggle the boolean.
         $('#toggleleft').toggleClass('flaticon-arrowheads3 flaticon-right39'); //Toggle where the icon points to.
 
-        if (leftShow && !rightShow) { //Right is hidden so expand the videoplayer.
-            $('#center').css('width', (center.w + right.w));
-            $('#videoplayerembed').css('width', (center.w + right.w));
-        }
-        if (!leftShow && rightShow) { //Left is hidden so expand the videoplayer.
-            $('#center').css('width', (center.w + left.w));
-            $('#videoplayerembed').css('width', (center.w + left.w));
-        }
-        if ( (!leftShow && !rightShow) ) { //Both left and right are hidden so maximize videoplayer.
-            $('#center').css('width', container.w);
-            $('#videoplayerembed').css('width', container.w);
-        }
+        maximizeVideoPlayerResolution();
+
         if (leftShow && rightShow) {
             applyResolutions();
         }
@@ -457,20 +438,35 @@
         rightShow = !rightShow;
         $('#toggleright').toggleClass('flaticon-right39 flaticon-arrowheads3');
 
-        if (leftShow && !rightShow) { //Right is hidden so expand the videoplayer.
-            $('#center').css('width', (center.w + right.w));
-            $('#videoplayerembed').css('width', (center.w + right.w));
-        }
-        if (!leftShow && rightShow) { //Left is hidden so expand the videoplayer.
-            $('#center').css('width', (center.w + left.w));
-            $('#videoplayerembed').css('width', (center.w + left.w));
-        }
-        if ( (!leftShow && !rightShow) ) { //Both left and right are hidden so maximize videoplayer.
-            $('#center').css('width', container.w);
-            $('#videoplayerembed').css('width', container.w);
-        }
+        maximizeVideoPlayerResolution();
+
         if (leftShow && rightShow) {
             applyResolutions();
+        }
+    }
+
+    function maximizeVideoPlayerResolution() {
+        if (leftShow && !rightShow) { //Right is hidden so expand the videoplayer.
+            $('#left').css('width', left.w);
+            $('#left').css('height', left.h);
+            $('#center').css('width', (center.w + right.w));
+            $('#center').css('height', center.h);
+            $('#videoplayerembed').css('width', (center.w + right.w));
+            $('#videoplayerembed').css('height', center.h);
+        }
+        if (!leftShow && rightShow) { //Left is hidden so expand the videoplayer.
+            $('#right').css('width', right.w);
+            $('#right').css('height', right.h);
+            $('#center').css('width', (center.w + left.w));
+            $('#center').css('height', center.h);
+            $('#videoplayerembed').css('width', (center.w + left.w));
+            $('#videoplayerembed').css('height', center.h);
+        }
+        if ( (!leftShow && !rightShow) ) { //Both left and right are hidden so maximize videoplayer.
+            $('#center').css('width', (center.w + left.w + right.w));
+            $('#center').css('height', center.h);
+            $('#videoplayerembed').css('width', (center.w + left.w + right.w));
+            $('#videoplayerembed').css('height', center.h);
         }
     }
 
