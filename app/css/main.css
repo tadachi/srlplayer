@@ -66,24 +66,6 @@ position:relative;
 display:inline-block;
 }
 
-#leftmini
-{
-z-index: 1;
-
--webkit-font-smoothing: antialiased;
-font-size: medium;
-
-background-color: darkgray;
-color: white;
-font-family: Tahoma, Geneva, sans-serif;
-
-overflow:scroll;
-overflow-x:hidden;
-
-position:relative;
-display:inline-block;
-}
-
 #center
 {
 z-index: 1;
@@ -124,7 +106,7 @@ line-height: 95%;
 list-style-type: none;
 }
 
-#left li
+#left li.stream
 {
 border-radius: 15px;
 border-color: black;
@@ -145,8 +127,20 @@ background-color: #E8E8E8  ; /* lightergray */
 
 #left li.odd
 {
-color: black; /* lightblue */
+color: black;
 background-color: #F0F0F0; /* lightgray */
+}
+
+#left li.followed
+{
+color: black;
+background-color: #FFF5FD; /* verylightpink */
+}
+
+#left li.stream:hover
+{
+color: black;
+background-color: #CCCCFF;
 }
 
 .eventitle
@@ -163,14 +157,16 @@ color: #336600; /* green */
 font-weight:bold;
 }
 
-.followed
+.followedtitle
 {
-color: black;
-background-color: #FFF5FD; /* verylightpink */
+font-size: 140%;
+color: green;
+font-weight: bold;
 }
 
-#left li:hover {
-background: #CCCCFF; /* lightyellow */
+.viewercount
+{
+color: red;
 }
 
 .unselectable {

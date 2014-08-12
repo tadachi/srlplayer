@@ -4,9 +4,11 @@
     <meta content='text/html; charset=utf-8' http-equiv='content-type'>
     <title>srlplayer - lists popular gaming streams in a tabular format with built-in chat.</title>
     <meta name='description' content='Twitch stream viewer specifically for speedrunslive streamers <3. http://srl.takbytes.com'>
-    <meta name='keywords' content='srlplayer takbytes.com SRL speedrunslive speedrunslive streamer speedrunslivestreamer srlstreamer srlplayer'>
+    <meta name='keywords' content='srlplayer takbytes.com SRL speedrunslive speedrunslive streamer speedrunslivestreamer srlstreamer srlplayer twitch twitchstreamer twitchplayer'>
     <meta name='author' content='takada'>
+
     <link rel='stylesheet' href='css/main.css'>
+    <link rel='stylesheet' href='css/fonts.css'>
 
     <script src='js/jquery-2.1.1.min.js'></script>
     <script src='js/jquery.typing-0.2.0.min.js'></script>
@@ -31,10 +33,11 @@
     }
 
     /*
+     * Parses the URL for querystring params.
      * Example usage:
-     *   "http://dummy.com/?technology=jquery&blog=jquerybyexample".
-     *   var tech = getQueryStringParams('technology');
-     *   var blog = getQueryStringParams('blog');
+     *   url = "http://dummy.com/?technology=jquery&blog=jquerybyexample".
+     *   var tech = getQueryStringParams('technology'); //outputs: 'jquery'
+     *   var blog = getQueryStringParams('blog');       //outputs: 'jquerybyexample'
      */
      function getQueryStringParams(sParam) {
         var sPageURL      = window.location.href;
@@ -68,16 +71,13 @@
      * Ajax calls speedrunslive api and grabs json. Loads the json to a div through srlAndFollowedStreamTable().
      * Also can load followed streams that are online.
      */
-    function loadStreams() {
-        //'http://api.speedrunslive.com/test/team'      <--- LIVE DATA
-        //'test/srlJson.json'                           <--- TEST DATA // Use this instead of hammering speedrunslive server.
-        twitchusername = '';
+    function loadStreams(callback) {
+        twitchusername = ''; // Used for getting all streams that twitch user follows
         if (localStorage.getItem('twitchusername')) {
             twitchusername = localStorage.getItem('twitchusername')
         }
 
         // async.parallel will run all tasks at the same time.
-
         async.parallel([
             function (callback) {
                 getAllFollowedStreams(twitchusername, function(results) {
@@ -86,13 +86,13 @@
             },
             function (callback) {
                 $.ajax({
-                    url: 'http://api.speedrunslive.com/test/team',
+                    url      : 'http://api.speedrunslive.com/test/team',
 
                     // the name of the callback parameter, as specified by the YQL service
-                    jsonp: 'callback',
+                    jsonp    : 'callback',
 
                     // tell jQuery we're expecting JSONP
-                    dataType: 'jsonp', // Use JSONP. Workaround for Access-Control-Allow-Origin header.
+                    dataType : 'jsonp', // Use JSONP. Workaround for Access-Control-Allow-Origin header.
 
                     // work with the response
                     success: function( srlJson ) {
@@ -102,15 +102,18 @@
                 });
             }
         ],
-        function(err, streams) { // Each task will push their callbacks into an array.
-            // console.log(streams);
+        function(err,streams) { // Each task will push their callbacks into an array.
             srlAndFollowedStreamTable(streams);
+            $('#loading').hide(); // Hide the loading screen after all the streams are finished loading
+            callback(streams)
         });
 
+        return null
     }
 
     /*
-     * Loads the json to a div through srlAndFollowedStreamTable(). Does most of the work.
+     * Loads all the streams to the left div.
+     * Called by loadStreams(callback)
      */
     function srlAndFollowedStreamTable(streams) {
         var html = '';
@@ -140,30 +143,34 @@
                 e.preventDefault();
             }
             data = $(this).text().split(' '); // Parse html with twitch name. data[0] or first item is the channel name. the rest of array not needed.
-            console.log(data[0]);
-            // Reinject the videoplayer with the new params pointing to the chosen stream.
-            reloadVideoPlayer(data[0]);
-            // Reinject the chat with the new params pointing to the chosen stream.
-            reloadChatBox(data[0]);
+            // console.log(data[0]);
+
+            if (rightShow == false) { // Make sure to show chat after clicking on a new stream.
+                toggleRight();
+            }
+
+            reloadVideoPlayer(data[0]); // Reinject the videoplayer with the new params pointing to the chosen stream.
+
+            reloadChatBox(data[0]); // Reinject the chat with the new params pointing to the chosen stream.
         });
 
 
         function buildStreamSelectorHTML(streamer_name, image, title, current_viewers, followed) {
             if (followed) {
-                opentag = '<a href=\'#!/?streamer={streamer}\'><li class=\'followed\'>'.format({streamer: streamer_name});;
-                streamer_name = '<span style=\'font-size:140%; color:green; font-weight:bold;\'>{name}</span>'.format({name: streamer_name});
+                opentag       = '<a href="#!/?streamer={streamer}"><li class="stream followed">'.format({streamer: streamer_name});;
+                streamer_name = '<span class="followedtitle">{name}</span>'.format({name: streamer_name});
             }
-            else if (i%2) { //Make even and uneven different colors.
-                opentag = '<a href=\'#!/?streamer={streamer}\'><li class=\'odd\'>'.format({streamer: streamer_name});;
-                streamer_name = '<span class=\'oddtitle\'>{name}</span>'.format({name: streamer_name});
+            else if (i%2) {   //Make even and uneven different colors.
+                opentag       = '<a href="#!/?streamer={streamer}"><li class="stream odd">'.format({streamer: streamer_name});;
+                streamer_name = '<span class="oddtitle">{name}</span>'.format({name: streamer_name});
             } else {
-                opentag = '<a href=\'#!/?streamer={streamer}\'><li class=\'even\'>'.format({streamer: streamer_name});
-                streamer_name = '<span class=\'eventitle\'>{streamer}</span>'.format({streamer: streamer_name});
+                opentag       = '<a href="#!/?streamer={streamer}"><li class="stream even">'.format({streamer: streamer_name});
+                streamer_name = '<span class="eventitle">{name}</span>'.format({name: streamer_name});
             }
 
-            image          = '<img width=60 height=60 align=\'left\' src=\'{logo}\' alt=min>'.format({logo: image}); // Streamer's logo
+            image          = '<img width=60 height=60 align="left" src="{logo}" alt=min>'.format({logo: image}); // Streamer's logo
 
-            currentviewers = '<span style=\'color: red;\'>{viewercount}</span>'.format({viewercount: current_viewers}); // Number of viewers.
+            currentviewers = '<span class="viewercount">{viewercount}</span>'.format({viewercount: current_viewers}); // Number of viewers.
 
             endtag = '</li></a>'
 
@@ -181,13 +188,16 @@
 
     /*
      * Searches Those you follow that are online.
+     * However, it returns an array of all followed streams whether they are online or not.
+     * We need to only return those that are online which getOnlyOnlineFollowed(streams, callback) does.
+     * Called by loadStreams(callback)
      */
     function getAllFollowedStreams(name, callback) {
         var asyncTasks = [];
         var offset     = 0; // get the next 25 people if you follow more than 25 people so increase offset by 25.
         var limit      = 100;
         $.ajax({
-            url: 'https://api.twitch.tv/kraken/users/{name}/follows/channels?direction=DESC&limit={limit}&offset={offset}&sortby=created_at'.format({ name: name, limit: limit, offset: offset }),
+            url: 'https://api.twitch.tv/kraken/users/{name}/follows/channels?direction =DESC&limit={limit}&offset={offset}&sortby=created_at'.format({ name: name, limit: limit, offset: offset }),
             jsonp: 'callback',
             dataType: 'jsonp', // tell jQuery we're expecting JSONP.
 
@@ -206,6 +216,7 @@
     /*
      * Returns an array of streams that are online.
      * See https://github.com/caolan/async for more details on async.js.
+     * Called by getAllFollowedStreams(name, callback)
      */
     function getOnlyOnlineFollowed(streams, callback) {
         var asyncTasks = [];
@@ -215,7 +226,7 @@
                 asyncTasks.push(
                     function(callback) {
                         isStreamOnline(stream.channel.name, function(results) {
-                            callback(null, results);
+                            callback(null, results); // async.parallel needs first param to be null so that it can return null as an error.
                         });
                     }
                 );
@@ -234,13 +245,13 @@
      */
     function isStreamOnline(streamname, callback) {
         $.ajax({
-            url: 'https://api.twitch.tv/kraken/streams/' + streamname,
+            url      : 'https://api.twitch.tv/kraken/streams/' + streamname,
 
-            jsonp: 'callback',
+            jsonp    : 'callback',
 
-            dataType: 'jsonp', // tell jQuery we're expecting JSONP.
+            dataType : 'jsonp', // tell jQuery we're expecting JSONP.
 
-            success: function( stream ) { // work with the response.
+            success: function(stream) { // work with the response.
                 //console.log(stream);
                 if (stream.stream) {
                     callback(stream);
@@ -287,22 +298,17 @@
             ch: streamername});
 
         html =    ['<iframe ',
-                        'id=\'chat_embed\' ',
-                        'frameborder=\'0\' ',
-                        'scrolling=\'yes\' ',
-                        'src=\'{src}\' '.format({src: src}),
-                        'width=\'{w}\' '.format({w: right.w}),
-                        'height=\'{h}\'>'.format({h: right.h}),
+                        'id="chat_embed" ',
+                        'frameborder="0" ',
+                        'scrolling="yes" ',
+                        'src="{src}" '.format({src: src}),
+                        'width="{w}" '.format({w: right.w}),
+                        'height="{h}">'.format({h: right.h}),
                     '</iframe>'].join('');
 
         $('#chatbox').html(html);
     }
 
-
-
-    /*
-     * Creates and returns an object that has resolutions for 3 panels. left, center and right.
-     */
     function calcContainer() {
         containerWidth = $(window).width();
         containerHeight = $(window).height();
@@ -370,10 +376,10 @@
      */
     function applyResolutions() {
         container = calcContainer();
-        center = calcCenter();
-        left = calcLeft();
-        right = calcRight();
-        header = calcHeader();
+        center    = calcCenter();
+        left      = calcLeft();
+        right     = calcRight();
+        header    = calcHeader();
 
         $('#container').css('width', container.w);
         $('#container').css('height', container.h);
@@ -390,6 +396,9 @@
         $('#settingsmenu').css('width', left.w);
         $('#settingsmenu').css('height', 500);
         $('#settingsmenu').css('margin-top', header.h);
+
+        $('#streamcategory').css('width', left.w);
+        $('#categoriesmenu').css('width', left.w);
 
         maximizeVideoPlayerResolution();
 
@@ -413,9 +422,9 @@
 
     function toggleLeft() {
         container = calcContainer();
-        center = calcCenter();
-        left = calcLeft();
-        right = calcRight();
+        center    = calcCenter();
+        left      = calcLeft();
+        right     = calcRight();
 
         $('#left').toggle(); // Toggle show/hide
         leftShow = !leftShow; // Toggle the boolean.
@@ -430,9 +439,9 @@
 
     function toggleRight() {
         container = calcContainer();
-        center = calcCenter();
-        left = calcLeft();
-        right = calcRight();
+        center    = calcCenter();
+        left      = calcLeft();
+        right     = calcRight();
 
         $('#right').toggle();
         rightShow = !rightShow;
@@ -477,15 +486,21 @@
     $( document ).ready(function() {
         /* Load stream from url querystring */
         var streamer = getQueryStringParams('streamer');
+        var streams;
 
         if(streamer) {
             reloadVideoPlayer(streamer);
+            if (rightShow == false) {
+                toggleRight();
+            }
             reloadChatBox(streamer);
         }
 
-        loadStreams();
+        loadStreams(function(streams){
+            console.log(streams)
+        });
 
-        applyResolutions(); // Apply panel resolutions based on current window sizes
+        applyResolutions(); // Apply panel resolutions based on current window size.
 
         $('#toggleleft').click(function(event) {
             toggleLeft();
@@ -495,13 +510,17 @@
             toggleRight();
         });
 
-        $('#refreshstreams').click(function() {
-            loadStreams();
+        $('#refreshstreams').click(function() { //Refresh streams on click.
+            streams = loadStreams();
         });
 
-        $('#settings').click(function() {
+        $('#settings').click(function() { //Show the settingsmenu div on click.
             $('#settingsmenu').toggle();
         })
+
+        $('#apply').click(function() { //Refresh after applying settings.
+            location.reload();
+        });
 
         setInterval(function() {
             loadStreams();
@@ -510,58 +529,154 @@
         /*** Manage settings with session/localstorage ***/
         if( localStorage.getItem('twitchusername') ) {
             $('#twitchusername').val(localStorage.getItem('twitchusername'));
-            $('#showfollowedstreams').prop('checked', true); // Checkbox is checked.
+            $('#showfollowedtwitchstreams').prop('checked', true); // Checkbox is checked.
             $("#twitchusername").prop('disabled',true); // Disable textbox.
         }
 
-        $('#showfollowedstreams').click(function() { // Toggle show followers on list of streamers.
+        $('#showfollowedtwitchstreams').click(function() { // Toggle show followers on list of streamers.
             if ($(this).is(':checked')) {
                 localStorage.setItem('twitchusername', $('#twitchusername').val());
-                $("#twitchusername").prop('disabled',true); // Disable textbox.
+                $('#twitchusername').prop('disabled',true); // Disable textbox.
             }else {
-                $("#twitchusername").prop('disabled',false); // Enable textbox.
+                $('#twitchusername').prop('disabled',false); // Enable textbox.
                 localStorage.removeItem('twitchusername');
             }
         });
 
-        $('#apply').click(function() {
-            location.reload();
-        });
+        $('.categoriesmenu > li').bind('mouseover', openSubMenu);
+        $('.categoriesmenu > li').bind('mouseout', closeSubMenu);
 
     });
+
+    function openSubMenu() {
+        $(this).find('ul').css('visibility', 'visible');
+    };
+
+    function closeSubMenu() {
+        $(this).find('ul').css('visibility', 'hidden');
+    };
 
     $( window ).resize(function() {
         applyResolutions();
     });
     </script>
 
+    <style>
+        #streamcategory
+        {
+            z-index: 2;
+            font-size: 0;
+            margin: 0;
+
+            background-color: red;
+            width: 100%;
+
+            display: inline-block
+        }
+
+        .categoriesmenu
+        {
+            z-index: 2;
+            font-size: 0;
+            margin: 0;
+
+            background-color: red;
+            padding-left: 35px;
+        }
+
+        .categoriesmenu li
+        {
+            z-index: 2;
+            font-size: 35px;
+            list-style: none;
+            float: left;
+
+            background-color: red;
+        }
+        .categoriesmenu li ul {
+            z-index: 2;
+            font-size: 0;
+            margin: 0;
+
+            list-style:none;
+
+            position: absolute;
+            visibility: hidden;
+
+            background-color: red;
+        }
+        .categoriesmenu li ul li
+        {
+            width: 100%;
+            font-size: 35px;
+
+            z-index: 2;
+
+            list-style:none;
+
+            float: none;
+
+            background-color: red;
+        }
+
+        #streams
+        {
+            margin: 0;
+        }
+    </style>
+
     </head>
     <body>
         <div id='container'>
             <div id='settingsmenu'>
                 <div style='position: relative; border: 1px solid;'>
-                    <input id='showfollowedstreams' type='checkbox'>Enable show followed streams. Enter twitch username only:
+                    <input id='showfollowedtwitchstreams' type='checkbox'>Enable followed twitch streams. Enter <b>twitch</b> username:
                     <input id='twitchusername' type='text' value=''></input>
                 </div>
+                <!-- <div style='position: relative; border: 1px solid;'>
+                    <input id='showfollowedhitboxstreams' type='checkbox'>Enable followed hitbox streams. Enter <b>hitbox</b> username:
+                    <input id='hitboxusername' type='text' value=''></input>
+                </div> -->
                 <button id='apply' style='float: right; margin-top: 20px;' >Apply</button>
             </div>
 
             <div id='header' class='unselectable'>
-                <div id='toggleleft' style='position: relative; display:inline-block; margin: 0px 0px 0px 0px; cursor: pointer;' class='glyph flaticon-right39'></div>
+                <div id='toggleleft' class='glyph flaticon-right39' style='position: relative; display:inline-block; margin: 0px 0px 0px 0px; cursor: pointer;' ></div>
 
                 <div id='settings' class='senlightfont unselectable' style='position: absolute; display:inline-block; cursor: pointer; margin-top: 1px; padding: 1px 10px 1px 10px; font-size: medium;
                     border-radius: 4px; border-color: black; border: 1px solid; background-color: white; cursor: pointer;'>Settings</div>
 
                 <div id='copyright' class='senlightfont' style='position: absolute; display:inline-block; margin: 3px 0px 0px 0px; font-size: medium;'>&copy; 2014 takada</div>
 
-                <div id='refreshstreams' style='position: absolute; display:inline-block; margin: 0px 0px 0px 0px; cursor: pointer;' class='glyph-icon flaticon-two123'></div>
+                <div id='refreshstreams' class='glyph-icon flaticon-two123' style='position: absolute; display:inline-block; margin: 0px 0px 0px 0px; cursor: pointer;' ></div>
 
                 <span id='multitwitchchat' class='senlightfont unselectable' style='position: absolute; display:inline-block; margin: 3px 0px 0px 0px;'><a href='http://mtc.takbytes.com'>multitwitchchat</a></span>
 
-                <div id='toggleright' style='position: absolute; cursor: pointer; display:inline-block; margin: 0px 0px 0px 0px;' class='glyph flaticon-arrowheads3'></div>
+                <div id='toggleright' class='glyph flaticon-arrowheads3' style='position: absolute; cursor: pointer; display:inline-block; margin: 0px 0px 0px 0px;' ></div>
             </div>
 
             <div id='left'>
+                <!-- <div id='streamcategory'>
+                    <ul class='categoriesmenu senlightfont'>
+                        <li>
+                            Category
+                            <ul style='visibility: hidden;'>
+                                <li>
+                                    All
+                                </li>
+                                <li>
+                                    Followed
+                                </li>
+                                <li>
+                                    Speedrunslive
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div> -->
+
+                <div id='loading' style='position: absolute; left: 50%; top: 45%; margin-left: -65px; margin-top: -32px;'><img src='img/ajax-loader.gif'></div>
+
                 <div id='streams'>
                     <ul></ul>
                 </div>
