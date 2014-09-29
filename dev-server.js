@@ -1,12 +1,12 @@
 var express         = require('express');
 var bodyParser      = require('body-parser');
 var methodOverride  = require('method-override');
-var port            = parseInt(process.env.PORT, 10) || 4000;
-var fs              = require('fs');
-var path            = require('path');
 var router          = express.Router();
 var vhost           = require('vhost');
 var app             = require('express.io')();
+
+var port            = parseInt(process.env.PORT, 10) || 4000;
+
 app.http().io();
 
 // parse application/x-www-form-urlencoded
@@ -28,7 +28,7 @@ home.use('/test', express.static(__dirname + '/app/test'));
 
 home.set('jsonp callback', true);
 
-var hostname = 'srl.tak.com';
+var hostname = 'srl.tak.com'; // Replace this with your own hostname.
 app.use(vhost(hostname, home));
 
 home.get('/', function(req, res) {
@@ -38,7 +38,7 @@ home.get('/', function(req, res) {
     req.io.route('home');
 })
 
-/* Outputs the users' ips visiting your website*/
+/* Outputs the users' ips visiting your website */
 app.io.route('home', function (req) {
     console.log(req.ip);
 });
