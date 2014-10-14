@@ -1,6 +1,11 @@
 srlplayer
 =========
 
+#### Note
+Project has been deprecated in favor of the newer version.
+
+Please see [srlplayer2]https://github.com/tadachi/srlplayer2
+
 #### Description
 Visit http://srl.takbytes.com to see this app live.
 

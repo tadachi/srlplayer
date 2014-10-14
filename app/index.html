@@ -197,7 +197,7 @@
         var offset     = 0; // get the next 25 people if you follow more than 25 people so increase offset by 25.
         var limit      = 200;
         $.ajax({
-            url: 'https://api.twitch.tv/kraken/users/{name}/follows/channels?direction =DESC&limit={limit}&offset={offset}&sortby=created_at'.format({ name: name, limit: limit, offset: offset }),
+            url: 'https://api.twitch.tv/kraken/users/{name}/follows/channels?direction=DESC&limit={limit}&offset={offset}&sortby=created_at'.format({ name: name, limit: limit, offset: offset }),
             jsonp: 'callback',
             dataType: 'jsonp', // tell jQuery we're expecting JSONP.
 
@@ -316,7 +316,6 @@
         return {
             w: containerWidth, h: containerHeight
         };
-
     }
 
     function calcCenter() {
